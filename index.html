@@ -949,9 +949,9 @@
   const AD_REWARD = 20000;
 
   function loadBalance(){
-    let v = localStorage.getItem(BAL_KEY);
-    if(v === null){ v = 10000; localStorage.setItem(BAL_KEY, v); }
-    return parseInt(v, 10);
+    const v = localStorage.getItem(BAL_KEY);
+    return v === null ? 10000 : parseInt(v, 10);
+}
   }
   async function saveBalance(v){
   v = Math.max(0, Math.round(v));
@@ -1026,7 +1026,7 @@
   }
   ensureCreatedAt();
 
-  let balance = loadBalance();
+  let balance = 0;
   let history = loadHistory();
   let stats = loadStats();
   let soundOn = loadSound();
@@ -2379,8 +2379,8 @@ async function loadCoinRushUser() {
     console.log('Пользователь из Supabase:', data);
 
     window.coinrushUser = data;
-  balance = Number(data.balance) || 0;
-localStorage.setItem(BAL_KEY, String(balance));
+    balance = Number(data.balance) || 0;
+    localStorage.setItem(BAL_KEY, String(balance));
 }
 
 loadCoinRushUser();
