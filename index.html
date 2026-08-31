@@ -954,6 +954,8 @@
 }
   
 function saveBalance(v){
+  console.log("SAVE BALANCE:", v);
+  
   v = Math.max(0, Math.round(v));
 
   localStorage.setItem(BAL_KEY, String(v));
