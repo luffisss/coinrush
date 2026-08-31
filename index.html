@@ -952,32 +952,29 @@
     const v = localStorage.getItem(BAL_KEY);
     return v === null ? 10000 : parseInt(v, 10);
 }
-  }
-  async function saveBalance(v){
+  
+function saveBalance(v){
   v = Math.max(0, Math.round(v));
 
-  // временный локальный кэш
   localStorage.setItem(BAL_KEY, String(v));
 
-  // сохраняем настоящий баланс в Supabase
-  if (window.coinrushUser?.telegram_id) {
-    const { data, error } = await supabaseClient.rpc(
+  if (window.coinrushUser?.telegram_id && supabaseClient) {
+    supabaseClient.rpc(
       "coinrush_set_balance",
       {
         p_telegram_id: String(window.coinrushUser.telegram_id),
         p_balance: v
       }
-    );
-
-    if (error) {
-      console.error("Ошибка сохранения баланса:", error);
-    } else {
-      console.log("Баланс сохранён в Supabase:", data);
-    }
+    ).then(({ data, error }) => {
+      if (error) {
+        console.error("Ошибка сохранения баланса:", error);
+      } else {
+        console.log("Баланс сохранён в Supabase:", data);
+      }
+    });
   }
-
   return v;
-}
+  
   }
   function loadHistory(){
     try{ return JSON.parse(localStorage.getItem(HIST_KEY)) || []; }catch(e){ return []; }
