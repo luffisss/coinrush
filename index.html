@@ -1129,7 +1129,10 @@ function saveBalance(v){
         if(row.avatar){ avatarData=String(row.avatar); localStorage.setItem(AVATAR_KEY,avatarData); }
         if(row.avatar_frame){ equippedFrame=String(row.avatar_frame); localStorage.setItem(FRAME_KEY,equippedFrame); }
         if(Array.isArray(row.owned_frames)){ ownedFrames=row.owned_frames; localStorage.setItem(OWNED_FRAMES_KEY,JSON.stringify(ownedFrames)); }
-        if(row.balance !== null && row.balance !== undefined) balance=saveBalance(Number(row.balance));
+        if(row.balance !== null && row.balance !== undefined){
+  balance = Number(row.balance);
+  localStorage.setItem(BAL_KEY, String(balance));
+}
         if(row.xp !== null && row.xp !== undefined){ xpTotal=Math.max(0,Math.floor(Number(row.xp))); saveXP(xpTotal); }
         if(row.streak_data && typeof row.streak_data === "object"){ streak=Object.assign(streak,row.streak_data); saveStreak(streak); }
         if(row.stats_data && typeof row.stats_data === "object"){ stats=Object.assign(stats,row.stats_data); saveStats(stats); }
