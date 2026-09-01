@@ -1030,7 +1030,7 @@ function saveBalance(v){
   }
   ensureCreatedAt();
 
-  let balance = 0;
+  let balance = loadBalance();
   let history = loadHistory();
   let stats = loadStats();
   let soundOn = loadSound();
@@ -2343,53 +2343,5 @@ function saveBalance(v){
 
 })();
 </script>
-<script>
-const SUPABASE_URL = 'https://vuasmwbqvmxjlhjlcnbl.supabase.co';
-
-const SUPABASE_KEY = 'sb_publishable_NT_MPvCXaYtvgU3RUN1cLA_IAlSHxI8';
-
-const supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-);
-
-const tg = window.Telegram.WebApp;
-
-tg.ready();
-tg.expand();
-
-async function loadCoinRushUser() {
-    const telegramUser = tg.initDataUnsafe?.user;
-
-    if (!telegramUser) {
-        console.log('Telegram user не найден');
-        return;
-    }
-
-    const telegramId = String(telegramUser.id);
-
-    console.log('Telegram ID:', telegramId);
-
-    const { data, error } = await supabaseClient.rpc(
-        'coinrush_get_or_create_user',
-        {
-            p_telegram_id: telegramId,
-            p_local_coinrush_id: null
-        }
-    );
-
-    if (error) {
-        console.error('Ошибка Supabase:', error);
-        return;
-    }
-
-    console.log('Пользователь из Supabase:', data);
-
-    window.coinrushUser = data;
-    balance = Number(data.balance) || 0;
-    localStorage.setItem(BAL_KEY, String(balance));
-}
-
-loadCoinRushUser();
 </body>
 </html>
