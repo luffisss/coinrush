@@ -216,21 +216,6 @@
   display:flex;
   animation:fadeIn .2s ease;
 }
-
-#framesModal .modal-close-row{
-  position:absolute;
-  top:12px;
-  right:12px;
-
-  z-index:50;
-
-  margin:0;
-  padding:0;
-
-  display:block;
-
-  background:none;
-}
 /* ===== AVATAR FRAMES MODAL ===== */
 
 #framesModal .modal-box{
@@ -263,13 +248,33 @@
   display:flex;
   justify-content:center;
   align-items:center;
-
   width:100%;
-
   margin-top:18px;
   margin-bottom:0;
+  padding:0;
+}
+  #framesModal .modal-close-row .icon-btn{
+  width:100%;
+  height:48px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 
   padding:0;
+  margin:0;
+
+  border:none;
+  border-radius:14px;
+
+  background:linear-gradient(90deg,#a94cf5,#7628df);
+  color:#fff;
+
+  font-size:14px;
+  font-weight:800;
+  text-align:center;
+
+  cursor:pointer;
+  box-sizing:border-box;
 }
   @keyframes slideUp{ from{transform:translateY(100%);} to{transform:translateY(0);} }
   .modal-box h3{ margin:0 0 8px 0; font-size:18px; }
@@ -952,12 +957,21 @@
   </div>
 
   <!-- AVATAR FRAMES -->
-  <div class="modal-bg" id="framesModal"><div class="modal-box"><div class="modal-close-row"><span class="icon-btn" data-close="framesModal">✕</span></div>
-    <h3>🖼️ AVATAR FRAMES</h3><p>Рамка накладывается поверх аватарки и не заменяет её.</p><div class="frame-grid" id="frameGrid"></div>
+<div class="modal-bg" id="framesModal">
+  <div class="modal-box">
+
+    <h3>🖼️ AVATAR FRAMES</h3>
+
+    <p>Рамка накладывается поверх аватарки и не заменяет её.</p>
+
+    <div class="frame-grid" id="frameGrid"></div>
+
     <div class="modal-close-row">
-  <span class="icon-btn" data-close="framesModal">ЗАКРЫТЬ</span>
+      <span class="icon-btn" data-close="framesModal">ЗАКРЫТЬ</span>
+    </div>
+
+  </div>
 </div>
-  </div></div>
 
   <!-- MENU MODAL -->
   <div class="modal-bg" id="menuModal">
