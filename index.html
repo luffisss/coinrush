@@ -217,25 +217,20 @@
   animation:fadeIn .2s ease;
 }
 
-.modal-box{
-  background:var(--bg2);
-  width:100%;
-  max-width:520px;
-  max-height:calc(100dvh - 12px);
+#framesModal .modal-close-row{
+  position:absolute;
+  top:12px;
+  right:12px;
 
-  overflow-y:auto;
-  overscroll-behavior:contain;
-  -webkit-overflow-scrolling:touch;
+  z-index:50;
 
-  border-radius:24px 24px 0 0;
-  padding:22px 20px calc(22px + env(safe-area-inset-bottom)) 20px;
+  margin:0;
+  padding:0;
 
-  border:1px solid var(--border);
-  border-bottom:none;
+  display:block;
 
-  animation:slideUp .25s ease;
+  background:none;
 }
-
 /* ===== AVATAR FRAMES MODAL ===== */
 
 #framesModal .modal-box{
