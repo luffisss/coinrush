@@ -212,12 +212,77 @@
     display:none; align-items:flex-end; justify-content:center;
   }
   .modal-bg.show{ display:flex; animation:fadeIn .2s ease; }
-  .modal-box{
-    background:var(--card2, var(--bg2)); background:var(--bg2); width:100%; max-width:520px;
-    border-radius:24px 24px 0 0; padding:22px 20px calc(22px + env(safe-area-inset-bottom)) 20px;
-    border:1px solid var(--border); border-bottom:none;
-    animation:slideUp .25s ease;
-  }
+.modal-bg.show{
+  display:flex;
+  animation:fadeIn .2s ease;
+}
+
+.modal-box{
+  background:var(--bg2);
+  width:100%;
+  max-width:520px;
+  max-height:calc(100dvh - 12px);
+
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+
+  border-radius:24px 24px 0 0;
+  padding:22px 20px calc(22px + env(safe-area-inset-bottom)) 20px;
+
+  border:1px solid var(--border);
+  border-bottom:none;
+
+  animation:slideUp .25s ease;
+}
+
+/* ===== AVATAR FRAMES MODAL ===== */
+
+#framesModal .modal-box{
+  max-height:calc(100dvh - 12px);
+  overflow-y:auto;
+}
+  
+#framesModal .modal-close-row{
+  position:sticky;
+  top:0;
+  z-index:20;
+
+  display:flex;
+  justify-content:flex-end;
+
+  margin:-22px -20px 6px -20px;
+  padding:14px 20px 8px;
+
+  background:var(--bg2);
+}
+
+#framesModal .frame-grid{
+  padding-bottom:12px;
+}
+
+@keyframes slideUp{
+  from{transform:translateY(100%);}
+  to{transform:translateY(0);}
+}
+
+.modal-box h3{
+  margin:0 0 8px 0;
+  font-size:18px;
+}
+
+.modal-box p{
+  color:var(--text2);
+  font-size:13px;
+  line-height:1.5;
+  margin:0 0 16px 0;
+}
+
+.modal-close-row{
+  display:flex;
+  justify-content:flex-end;
+  margin-bottom:6px;
+}
   @keyframes slideUp{ from{transform:translateY(100%);} to{transform:translateY(0);} }
   .modal-box h3{ margin:0 0 8px 0; font-size:18px; }
   .modal-box p{ color:var(--text2); font-size:13px; line-height:1.5; margin:0 0 16px 0; }
