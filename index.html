@@ -954,11 +954,14 @@
 }
   
 function saveBalance(v){
-  console.log("SAVE BALANCE:", v);
-  
+  console.log("coinrushUser:", window.coinrushUser);
+
   v = Math.max(0, Math.round(v));
 
   localStorage.setItem(BAL_KEY, String(v));
+
+  console.log("telegram_id:", window.coinrushUser?.telegram_id);
+  console.log("supabaseClient:", supabaseClient);
 
   if (window.coinrushUser?.telegram_id && supabaseClient) {
     supabaseClient.rpc(
@@ -975,9 +978,9 @@ function saveBalance(v){
       }
     });
   }
+
   return v;
-  
-  }
+}
   function loadHistory(){
     try{ return JSON.parse(localStorage.getItem(HIST_KEY)) || []; }catch(e){ return []; }
   }
