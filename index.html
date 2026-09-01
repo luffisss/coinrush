@@ -1285,24 +1285,7 @@ function saveBalance(v){
 function saveNickname(v){
   nickname = v;
   localStorage.setItem(NICKNAME_KEY, v);
-
-  if (supabaseClient && getTelegramUser()?.id) {
-    supabaseClient.rpc(
-      "coinrush_update_profile",
-      {
-        p_telegram_id: String(getTelegramUser().id),
-        p_nickname: v || "Player",
-        p_xp: xpTotal,
-        p_level: calculateLevel()
-      }
-    ).then(({ data, error }) => {
-      if (error) {
-        console.error("Ошибка сохранения ника:", error);
-      } else {
-        console.log("Ник сохранён в Supabase:", data);
-      }
-    });
-  }
+  scheduleSupabaseSync();
 }
   function validNickname(v){ return /^[A-Za-zА-Яа-яЁё0-9_]{3,20}$/.test(v); }
   function getTelegramUser(){ try{return window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe ? window.Telegram.WebApp.initDataUnsafe.user : null;}catch(e){return null;} }
