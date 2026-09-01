@@ -861,7 +861,7 @@
       <div class="streak-sub" id="profileStreakTimer" style="text-align:center;margin-top:8px;">До следующей награды — —</div>
       <div class="recovery-big" id="profileRecoveryBox" style="display:none;"><b>⚠️ MISSED DAY</b><br>RECOVERY WINDOW · <span id="profileRecoveryDays">2</span> DAYS LEFT<br><button class="btn-tiny" id="profileRestoreStreakBtn" style="margin-top:8px;">RESTORE STREAK</button></div>
       <div class="streak-tabs"><button class="streak-tab active" id="profileStreakTab">🔥 STREAK</button><button class="streak-tab" id="profileAchTab">🏆 ACHIEVEMENTS</button></div>
-      <div id="profileStreakPanel"><div class="streak-link" id="streakDetailsLink">Подробнее и календарь →</div></div>
+      <div id="profileStreakPanel"><div class="streak-link" id="streakDetailsLinkProfile">Подробнее и календарь →</div></div>
       <div id="profileAchPanel" style="display:none;"><div class="ach-grid" id="profileAchGrid"></div></div>
     </div>
     <div class="ad-card"><div class="ad-info"><b>📺 REWARD AD</b>+20 000 CR · COOLDOWN 10 MIN</div><button class="btn-ad" id="watchAdProfileBtn">СМОТРЕТЬ</button></div>
@@ -1819,12 +1819,14 @@ await saveUser();
   }
   document.getElementById("restoreStreakBtn").addEventListener("click", ()=>{ clickSound(); restoreStreak(); });
 
-  document.getElementById("streakDetailsLink").addEventListener("click", ()=>{
+  function openStreakDetails(){
     clickSound();
     renderStreakCalendar();
     renderMilestoneList();
     document.getElementById("streakModal").classList.add("show");
-  });
+  }
+  document.getElementById("streakDetailsLink").addEventListener("click", openStreakDetails);
+  document.getElementById("streakDetailsLinkProfile").addEventListener("click", openStreakDetails);
 
   function pluralDays(n){n=Math.abs(n)%100;const x=n%10;return n>10&&n<20?"ДНЕЙ":x===1?"ДЕНЬ":x>=2&&x<=4?"ДНЯ":"ДНЕЙ";}
   function refreshStreakTimer(){
@@ -1870,21 +1872,6 @@ await saveUser();
       wrap.appendChild(row);
     });
   }
-  function renderAchievements(){
-    const grid = document.getElementById("achGrid");
-    grid.innerHTML = "";
-    let unlockedCount = 0;
-    STREAK_MILESTONES.forEach(m=>{
-      const unlocked = streak.unlockedMilestones.indexOf(m.days) !== -1;
-      if(unlocked) unlockedCount++;
-      const cell = document.createElement("div");
-      cell.className = "ach-cell" + (unlocked ? " unlocked" : "");
-      cell.innerHTML = `<span>${unlocked ? "🔥" : "🔒"}</span><span class="a-lbl">${m.days}Д · ${m.title}</span>`;
-      grid.appendChild(cell);
-    });
-    document.getElementById("achCountText").textContent = unlockedCount + " / " + STREAK_MILESTONES.length;
-  }
-
   /* ============ REWARD AD ============ */
   function startAdCooldown(){ localStorage.setItem(AD_COOLDOWN_KEY, String(Date.now())); }
   function adCooldownRemaining(){
