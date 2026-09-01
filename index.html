@@ -1114,7 +1114,7 @@ function saveBalance(v){
       telegram_username:tg.username || null,
       coinrush_id:u.id,
       nickname:u.nickname || "Player",
-      avatar:u.avatar || null,
+      avatar: avatarData || u.avatar || null,
       avatar_frame:u.avatarFrame || "purple",
       owned_frames:u.ownedFrames || ["purple"],
       balance:Number(u.balance)||0,
@@ -1317,7 +1317,99 @@ function saveNickname(v){
   function getTelegramUser(){ try{return window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe ? window.Telegram.WebApp.initDataUnsafe.user : null;}catch(e){return null;} }
   function defaultAvatarData(){ const u=getTelegramUser(); return u && u.photo_url ? u.photo_url : ""; }
   function applyAvatar(el){ if(!el) return; const src=avatarData || defaultAvatarData(); if(src){el.style.backgroundImage=`url("${src.replace(/"/g,'&quot;')}")`;el.classList.remove("no-logo");}else{el.style.backgroundImage="var(--logo-img)";el.classList.add("no-logo");el.textContent="👤";} }
-  function saveAvatar(data){ avatarData=data||""; if(avatarData) localStorage.setItem(AVATAR_KEY,avatarData); else localStorage.removeItem(AVATAR_KEY); applyAllAvatars(); }
+  async function saveAvatarFile(file){
+  if(!file) return false;
+
+  const tg = getTelegramUser();
+  if(!tg || !tg.id){
+    toast("Telegram user не найден");
+    return false;
+  }
+
+  try{
+    // Сжимаем изображение
+    const bitmap = await createImageBitmap(file);
+
+    const maxSize = 512;
+    const scale = Math.min(1, maxSize / Math.max(bitmap.width, bitmap.height));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+
+    const blob = await new Promise(resolve =>
+      canvas.toBlob(resolve, "image/webp", 0.82)
+    );
+
+    if(!blob){
+      toast("Не удалось обработать аватар");
+      return false;
+    }
+
+    // Уникальный путь — старые аватары не перезаписываются
+    const filePath =
+      `${String(tg.id)}/${Date.now()}.webp`;
+
+    console.log("Загрузка аватара:", filePath);
+
+    const { data, error } = await supabaseClient
+      .storage
+      .from("avatars")
+      .upload(filePath, blob, {
+        contentType: "image/webp",
+        cacheControl: "3600",
+        upsert: false
+      });
+
+    if(error){
+      console.error("Ошибка загрузки аватара:", error);
+      toast("Ошибка загрузки аватара");
+      return false;
+    }
+
+    // Получаем публичный URL
+    const { data: publicData } =
+      supabaseClient
+        .storage
+        .from("avatars")
+        .getPublicUrl(filePath);
+
+    const publicUrl = publicData?.publicUrl;
+
+    if(!publicUrl){
+      console.error("Не удалось получить URL аватара");
+      toast("Ошибка получения URL аватара");
+      return false;
+    }
+
+    console.log("Аватар загружен:", publicUrl);
+
+    // Теперь вместо Base64 храним только URL
+    avatarData = publicUrl;
+
+    localStorage.setItem(
+      AVATAR_KEY,
+      publicUrl
+    );
+
+    // Сохраняем URL в users.avatar
+    await saveUser();
+
+    applyAllAvatars();
+
+    toast("✓ AVATAR UPDATED");
+
+    return true;
+
+  }catch(e){
+    console.error("Ошибка аватара:", e);
+    toast("Ошибка обработки аватара");
+    return false;
+  }
+}
   function applyAllAvatars(){ applyAvatar(document.getElementById("profileAvatar")); document.querySelectorAll(".topbar .avatar").forEach(applyAvatar); const r=document.getElementById("ratingAvatar"); if(r) applyAvatar(r); }
 
   const FRAME_DEFS = [
