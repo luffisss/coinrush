@@ -1390,13 +1390,16 @@ function saveNickname(v){
     // Теперь вместо Base64 храним только URL
     avatarData = publicUrl;
 
-    localStorage.setItem(
-      AVATAR_KEY,
-      publicUrl
-    );
+localStorage.setItem(
+  AVATAR_KEY,
+  publicUrl
+);
 
-    // Сохраняем URL в users.avatar
-    await saveUser();
+// Синхронизируем с объектом пользователя
+u.avatar = publicUrl;
+
+// Сохраняем URL в users.avatar
+await saveUser();
 
     applyAllAvatars();
 
@@ -2456,7 +2459,20 @@ function saveNickname(v){
   document.getElementById("editProfileBtn").addEventListener("click",()=>{clickSound();document.getElementById("editNicknameInput").value=nickname;document.getElementById("editProfileModal").classList.add("show");});
   document.getElementById("saveProfileBtn").addEventListener("click",()=>{clickSound();if(saveNicknameFromInput(document.getElementById("editNicknameInput"),document.getElementById("editNicknameError"),"editProfileModal"))toast("✓ NICKNAME UPDATED");});
   document.getElementById("changeAvatarBtn").addEventListener("click",()=>{clickSound();document.getElementById("avatarFileInput").click();});
-  document.getElementById("avatarFileInput").addEventListener("change",e=>{const f=e.target.files&&e.target.files[0];if(!f)return;if(!f.type.startsWith("image/")){toast("Некорректный файл");return;}const r=new FileReader();r.onload=()=>saveAvatar(r.result);r.readAsDataURL(f);});
+  document.getElementById("avatarFileInput").addEventListener("change", async e => {
+  const f = e.target.files && e.target.files[0];
+
+  if (!f) return;
+
+  if (!f.type.startsWith("image/")) {
+    toast("Некорректный файл");
+    return;
+  }
+
+  await saveAvatarFile(f);
+
+  e.target.value = "";
+});
   document.getElementById("avatarFramesBtn").addEventListener("click",()=>{clickSound();renderFrameGrid();document.getElementById("framesModal").classList.add("show");});
   document.getElementById("levelUpContinue").addEventListener("click",()=>document.getElementById("levelUpModal").classList.remove("show"));
   document.getElementById("profileStreakTab").addEventListener("click",()=>{document.getElementById("profileStreakTab").classList.add("active");document.getElementById("profileAchTab").classList.remove("active");document.getElementById("profileStreakPanel").style.display="block";document.getElementById("profileAchPanel").style.display="none";});
