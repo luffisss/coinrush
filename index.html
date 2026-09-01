@@ -2459,13 +2459,14 @@ await saveUser();
   document.getElementById("editProfileBtn").addEventListener("click",()=>{clickSound();document.getElementById("editNicknameInput").value=nickname;document.getElementById("editProfileModal").classList.add("show");});
   document.getElementById("saveProfileBtn").addEventListener("click",()=>{clickSound();if(saveNicknameFromInput(document.getElementById("editNicknameInput"),document.getElementById("editNicknameError"),"editProfileModal"))toast("✓ NICKNAME UPDATED");});
   document.getElementById("changeAvatarBtn").addEventListener("click",()=>{clickSound();document.getElementById("avatarFileInput").click();});
-  document.getElementById("avatarFileInput").addEventListener("change", async e => {
+  document.getElementById("avatarFileInput").addEventListener("change", async e=>{
   const f = e.target.files && e.target.files[0];
 
-  if (!f) return;
+  if(!f) return;
 
-  if (!f.type.startsWith("image/")) {
+  if(!f.type.startsWith("image/")){
     toast("Некорректный файл");
+    e.target.value = "";
     return;
   }
 
