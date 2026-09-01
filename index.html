@@ -1282,10 +1282,11 @@ function saveBalance(v){
   }
   const updateBalance = changeBalance; // backend-ready alias (spec: updateBalance())
 
-  function saveNickname(v){
+ function saveNickname(v){
   nickname = v;
   localStorage.setItem(NICKNAME_KEY, v);
-
+  scheduleSupabaseSync();
+}
   if (supabaseClient && getTelegramUser()?.id) {
     supabaseClient.rpc(
       "coinrush_update_profile",
