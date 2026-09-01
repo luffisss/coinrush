@@ -237,20 +237,6 @@
   max-height:calc(100dvh - 12px);
   overflow-y:auto;
 }
-  
-#framesModal .modal-close-row{
-  position:sticky;
-  top:0;
-  z-index:20;
-
-  display:flex;
-  justify-content:flex-end;
-
-  margin:-22px -20px 6px -20px;
-  padding:8px 12px;
-
-  background:var(--bg2);
-}
 
 #framesModal .frame-grid{
   padding-bottom:12px;
@@ -275,8 +261,15 @@
 
 .modal-close-row{
   display:flex;
-  justify-content:flex-end;
-  margin-bottom:6px;
+  justify-content:center;
+  align-items:center;
+
+  width:100%;
+
+  margin-top:18px;
+  margin-bottom:0;
+
+  padding:0;
 }
   @keyframes slideUp{ from{transform:translateY(100%);} to{transform:translateY(0);} }
   .modal-box h3{ margin:0 0 8px 0; font-size:18px; }
@@ -891,7 +884,9 @@
   <!-- BONUS MODAL -->
   <div class="modal-bg" id="bonusModal">
     <div class="modal-box">
-      <div class="modal-close-row"><span class="icon-btn" data-close="bonusModal">✕</span></div>
+     <div class="modal-close-row">
+  <span class="icon-btn" data-close="framesModal">ЗАКРЫТЬ</span>
+</div>
       <h3>CR — виртуальная валюта</h3>
       <p>В этой демо-версии CR нельзя купить или вывести. CR используется только внутри игр CoinRush и не имеет денежной стоимости.</p>
       <button class="btn btn-primary" id="claimBonusBtn" style="width:100%;">Получить бонус +500 CR</button>
@@ -959,6 +954,9 @@
   <!-- AVATAR FRAMES -->
   <div class="modal-bg" id="framesModal"><div class="modal-box"><div class="modal-close-row"><span class="icon-btn" data-close="framesModal">✕</span></div>
     <h3>🖼️ AVATAR FRAMES</h3><p>Рамка накладывается поверх аватарки и не заменяет её.</p><div class="frame-grid" id="frameGrid"></div>
+    <div class="modal-close-row">
+  <span class="icon-btn" data-close="framesModal">ЗАКРЫТЬ</span>
+</div>
   </div></div>
 
   <!-- MENU MODAL -->
