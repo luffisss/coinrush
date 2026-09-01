@@ -1016,7 +1016,29 @@ function saveBalance(v){
     return id;
   }
   function loadXP(){ return parseInt(localStorage.getItem(XP_KEY) || "0", 10); }
-  function saveXP(v){ localStorage.setItem(XP_KEY, String(v)); scheduleSupabaseSync(); }
+  function saveXP(v){
+  v = Math.max(0, Math.floor(Number(v) || 0));
+
+  localStorage.setItem(XP_KEY, String(v));
+
+  if (supabaseClient && getTelegramUser()?.id) {
+    supabaseClient.rpc(
+      "coinrush_update_profile",
+      {
+        p_telegram_id: String(getTelegramUser().id),
+        p_nickname: nickname || "Player",
+        p_xp: v,
+        p_level: calculateLevel()
+      }
+    ).then(({ data, error }) => {
+      if (error) {
+        console.error("Ошибка сохранения XP:", error);
+      } else {
+        console.log("XP сохранён в Supabase:", data);
+      }
+    });
+  }
+}
   function loadStreak(){
     try{
       const s = JSON.parse(localStorage.getItem(STREAK_KEY));
@@ -1260,7 +1282,28 @@ function saveBalance(v){
   }
   const updateBalance = changeBalance; // backend-ready alias (spec: updateBalance())
 
-  function saveNickname(v){ nickname=v; localStorage.setItem(NICKNAME_KEY,v); }
+  function saveNickname(v){
+  nickname = v;
+  localStorage.setItem(NICKNAME_KEY, v);
+
+  if (supabaseClient && getTelegramUser()?.id) {
+    supabaseClient.rpc(
+      "coinrush_update_profile",
+      {
+        p_telegram_id: String(getTelegramUser().id),
+        p_nickname: v || "Player",
+        p_xp: xpTotal,
+        p_level: calculateLevel()
+      }
+    ).then(({ data, error }) => {
+      if (error) {
+        console.error("Ошибка сохранения ника:", error);
+      } else {
+        console.log("Ник сохранён в Supabase:", data);
+      }
+    });
+  }
+}
   function validNickname(v){ return /^[A-Za-zА-Яа-яЁё0-9_]{3,20}$/.test(v); }
   function getTelegramUser(){ try{return window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe ? window.Telegram.WebApp.initDataUnsafe.user : null;}catch(e){return null;} }
   function defaultAvatarData(){ const u=getTelegramUser(); return u && u.photo_url ? u.photo_url : ""; }
