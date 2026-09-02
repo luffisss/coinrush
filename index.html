@@ -2033,7 +2033,7 @@ await saveUser();
   document.getElementById("bjDealBtn").addEventListener("click", async ()=>{
     clickSound();
     if(bjInProgress) return;
-    bjBet=validateBet(bjBet); if(bjBet <= 0 || bjBet > balance){ toast("Ваш баланс: 0"); return; }
+    bjBet=validateBet(bjBet); if(bjBet <= 0 || bjBet > balance){ toast("Не хватает CR-Coin"); return; }
     bjInProgress = true;
     changeBalance(-bjBet);
     bjDeck = freshDeck();
