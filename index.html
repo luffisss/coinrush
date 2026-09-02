@@ -1252,7 +1252,35 @@ function saveBalance(v){
         if(row.xp !== null && row.xp !== undefined){ xpTotal=Math.max(0,Math.floor(Number(row.xp))); saveXP(xpTotal); }
         if(row.streak_data && typeof row.streak_data === "object"){ streak=Object.assign(streak,row.streak_data); saveStreak(streak); }
         if(row.stats_data && typeof row.stats_data === "object"){ stats=Object.assign(stats,row.stats_data); saveStats(stats); }
-        if(Array.isArray(row.history_data)){ history=row.history_data.slice(0,20); saveHistory(history); }
+       if(Array.isArray(row.history_data)){
+  const serverHistory = row.history_data;
+  const localHistory = Array.isArray(history) ? history : [];
+
+  const merged = [...localHistory, ...serverHistory];
+
+  const unique = [];
+  const seen = new Set();
+
+  merged.forEach(h => {
+    if(!h) return;
+
+    const key = [
+      h.date || "",
+      h.time || "",
+      h.game || "",
+      h.delta || 0,
+      h.nickname || ""
+    ].join("|");
+
+    if(!seen.has(key)){
+      seen.add(key);
+      unique.push(h);
+    }
+  });
+
+  history = unique.slice(0,20);
+  localStorage.setItem(HIST_KEY, JSON.stringify(history));
+}
       }
       supabaseReady=true;
       renderBalance(); renderProfile(); renderStreakCard(); applyAllAvatars(); renderRating();
