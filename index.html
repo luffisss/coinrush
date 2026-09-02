@@ -647,20 +647,14 @@
   .streak-tab.active{background:linear-gradient(135deg,var(--purple-light),var(--purple-dark));color:#fff;border-color:var(--purple);}
   .recovery-big{margin-top:10px;padding:12px;border-radius:14px;background:rgba(240,68,85,.10);border:1px solid var(--red);font-size:11px;}
   .balance-format-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
-  .balance-format-switch{display:flex;align-items:stretch;width:176px;height:40px;padding:0;border-radius:22px;border:1px solid var(--purple);background:var(--bg2);box-shadow:0 0 14px rgba(139,92,246,.22);overflow:hidden;cursor:pointer;color:var(--text);font:inherit;font-weight:900;}
-  .balance-format-seg{display:flex;align-items:center;justify-content:center;height:100%;font-size:11px;letter-spacing:.5px;transition:.18s ease;user-select:none;}
-  .balance-format-off{width:33%;color:var(--text2);background:rgba(255,255,255,.015);}
-  .balance-format-name{width:39%;color:var(--text);border-left:1px solid var(--border);border-right:1px solid var(--border);}
-  .balance-format-short{width:28%;color:var(--text2);}
-  .balance-format-switch.mode-off .balance-format-off,
-  .balance-format-switch.mode-thousand .balance-format-name,
-  .balance-format-switch.mode-million .balance-format-name,
-  .balance-format-switch.mode-billion .balance-format-name{background:linear-gradient(135deg,var(--purple-light),var(--purple-dark));color:#fff;box-shadow:0 0 16px rgba(139,92,246,.45);}
-  .balance-format-switch.mode-off .balance-format-name{color:var(--text2);background:transparent;box-shadow:none;}
-  .balance-format-switch.mode-off .balance-format-short{color:var(--text2);}
-  .balance-format-hint{position:relative;display:flex;align-items:flex-start;gap:7px;margin-top:8px;padding:9px 10px;border:1px solid var(--purple);border-radius:12px;background:rgba(139,92,246,.11);color:var(--text2);font-size:10px;line-height:1.4;box-shadow:0 0 12px rgba(139,92,246,.16);animation:balanceHintIn .28s ease;}
-  .balance-format-hint::before{content:"";position:absolute;right:62px;top:-7px;width:12px;height:12px;background:rgba(139,92,246,.11);border-left:1px solid var(--purple);border-top:1px solid var(--purple);transform:rotate(45deg);}
-  .balance-hint-arrow{position:relative;z-index:1;font-size:15px;line-height:1;}
+  .balance-format-switch{display:flex;align-items:stretch;width:176px;height:40px;padding:0;border-radius:22px;border:1px solid var(--purple);background:var(--bg2);box-shadow:0 0 12px rgba(139,92,246,.16);overflow:hidden;}
+  .balance-format-seg{flex:1;display:flex;align-items:center;justify-content:center;height:100%;padding:0;border:0;background:transparent;color:var(--text2);font:inherit;font-size:11px;letter-spacing:.5px;font-weight:900;transition:background .18s ease,color .18s ease,box-shadow .18s ease;cursor:pointer;user-select:none;}
+  .balance-format-seg + .balance-format-seg{border-left:1px solid var(--border);}
+  .balance-format-seg.active{background:rgba(139,92,246,.22);color:var(--purple-light);box-shadow:inset 0 0 14px rgba(139,92,246,.16),0 0 8px rgba(139,92,246,.10);}
+  .balance-format-seg:hover{background:rgba(139,92,246,.12);color:var(--text);}
+  .balance-format-game-hint{display:flex;align-items:flex-start;gap:7px;margin:0 0 10px;padding:9px 10px;border:1px solid var(--purple-dark);border-radius:12px;background:rgba(139,92,246,.10);color:var(--text2);font-size:10px;line-height:1.4;box-shadow:0 0 12px rgba(139,92,246,.12);animation:balanceHintIn .28s ease;}
+  .balance-format-game-hint .balance-hint-arrow{font-size:15px;line-height:1;}
+  .balance-format-game-hint-text b{color:var(--text);}
   @keyframes balanceHintIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
   .bet-editor{margin:10px 0 12px;padding:12px;border-radius:16px;background:var(--card);border:1px solid var(--border);}
   .bet-editor label{display:block;font-size:10px;color:var(--text2);font-weight:800;margin-bottom:6px;letter-spacing:.8px;}
@@ -816,6 +810,10 @@
   <!-- BLACKJACK -->
   <div class="screen" id="screen-blackjack">
     <div class="back-btn" data-back="home">← Назад</div>
+    <div class="balance-format-game-hint" data-balance-game-hint style="display:none;">
+      <span class="balance-hint-arrow">👉</span>
+      <span class="balance-format-game-hint-text"></span>
+    </div>
     <div class="bj-table">
       <div>
         <div class="bj-section-label">DEALER</div>
@@ -848,6 +846,10 @@
   <!-- TOWER -->
   <div class="screen" id="screen-tower">
     <div class="back-btn" data-back="home">← Назад</div>
+    <div class="balance-format-game-hint" data-balance-game-hint style="display:none;">
+      <span class="balance-hint-arrow">👉</span>
+      <span class="balance-format-game-hint-text"></span>
+    </div>
     <div class="tower-wrap">
       <div class="tower-info-row">
         <div class="tower-level-label">УРОВЕНЬ <span id="towerLevelNum">0</span>/10</div>
@@ -872,6 +874,10 @@
   <!-- ROULETTE -->
   <div class="screen" id="screen-roulette">
     <div class="back-btn" data-back="home">← Назад</div>
+    <div class="balance-format-game-hint" data-balance-game-hint style="display:none;">
+      <span class="balance-hint-arrow">👉</span>
+      <span class="balance-format-game-hint-text"></span>
+    </div>
     <div class="wheel-wrap">
       <div class="pointer">▼</div>
       <div class="wheel-outer">
@@ -901,6 +907,10 @@
   <!-- COIN FLIP -->
   <div class="screen" id="screen-coinflip">
     <div class="back-btn" data-back="home">← Назад</div>
+    <div class="balance-format-game-hint" data-balance-game-hint style="display:none;">
+      <span class="balance-hint-arrow">👉</span>
+      <span class="balance-format-game-hint-text"></span>
+    </div>
     <div class="coinflip-balance">Баланс: <span id="cfBalanceText">10 000 CR</span></div>
     <div class="coin-stage">
       <div class="coin-3d" id="coin3d">
@@ -1090,15 +1100,11 @@
       <div class="menu-row" style="display:block;">
         <div class="balance-format-row">
           <span>Формат баланса</span>
-          <button class="balance-format-switch" id="balanceFormatBtn" type="button" aria-label="Формат баланса">
-            <span class="balance-format-seg balance-format-off">OFF</span>
-            <span class="balance-format-seg balance-format-name">МЛН</span>
-            <span class="balance-format-seg balance-format-short">КК</span>
-          </button>
-        </div>
-        <div id="balanceFormatHint" class="balance-format-hint" style="display:none;">
-          <span class="balance-hint-arrow">👉</span>
-          <span id="balanceFormatHintText">При следующем пороге можно включить компактный формат баланса.</span>
+          <div class="balance-format-switch" id="balanceFormatBtn" role="group" aria-label="Формат баланса">
+            <button class="balance-format-seg balance-format-off" data-balance-format="off" type="button">OFF</button>
+            <button class="balance-format-seg balance-format-name" data-balance-format="million" type="button">МЛН</button>
+            <button class="balance-format-seg balance-format-short" data-balance-format="kk" type="button">КК</button>
+          </div>
         </div>
       </div>
       <div class="menu-row">Версия <span style="color:var(--text2);">CoinRush 2.0</span></div>
@@ -1524,52 +1530,44 @@ function saveBalance(v){
     const out = value.toFixed(value < 100 ? 1 : 0).replace(/\.0$/, "");
     return (neg ? "-" : "") + out + (balanceFormat === "million" ? " МЛН" : " КК");
   }
-  function balanceFormatLabel(){
-    return BALANCE_FORMAT_META[balanceFormat] || BALANCE_FORMAT_META.off;
-  }
+  function balanceFormatLabel(){ return BALANCE_FORMAT_META[balanceFormat] || BALANCE_FORMAT_META.off; }
   function renderBalanceFormatControls(){
     const btn=document.getElementById("balanceFormatBtn");
-    const hint=document.getElementById("balanceFormatHint");
-    const hintText=document.getElementById("balanceFormatHintText");
-    const meta=balanceFormatLabel();
-    if(btn){
-      btn.className="balance-format-switch mode-"+balanceFormat;
-      const off=btn.querySelector(".balance-format-off");
-      const name=btn.querySelector(".balance-format-name");
-      const short=btn.querySelector(".balance-format-short");
-      if(off) off.textContent="OFF";
-      if(name) name.textContent="МЛН";
-      if(short) short.textContent="КК";
-    }
-    if(hint && hintText){
-      const threshold=Number(localStorage.getItem(BALANCE_HINT_KEY)||0);
-      const next=BALANCE_HINT_THRESHOLDS.find(t=>t>threshold);
-      if(balance >= 10000 && threshold > 0 && balance < next){
-        hintText.innerHTML="Можно менять формат баланса: <b>OFF → МЛН → КК</b>. Формат меняет только отображение, сам баланс не меняется.";
-        hint.style.display="flex";
-      } else {
-        hint.style.display="none";
-      }
-    }
+    if(!btn) return;
+    btn.querySelectorAll("[data-balance-format]").forEach(seg=>{
+      seg.classList.toggle("active", seg.dataset.balanceFormat===balanceFormat);
+      seg.setAttribute("aria-pressed", seg.dataset.balanceFormat===balanceFormat ? "true" : "false");
+    });
+  }
+  function currentBalanceHint(){
+    const notified=Number(localStorage.getItem(BALANCE_HINT_KEY)||0);
+    const next=BALANCE_HINT_THRESHOLDS.find(t=>t>notified);
+    return {notified,next};
+  }
+  function renderGameBalanceHint(){
+    const {notified,next}=currentBalanceHint();
+    const show = balance >= 10000 && notified >= 10000;
+    const text = next ? `💡 Баланс уже ${fmt(notified)} CR. В меню можно менять формат: <b>OFF / МЛН / КК</b>. Следующая подсказка появится на <b>${fmt(next)} CR</b>.` : `💡 Формат баланса можно менять в меню: <b>OFF / МЛН / КК</b>.`;
+    document.querySelectorAll("[data-balance-game-hint]").forEach(h=>{
+      const activeScreen=h.closest(".screen")?.classList.contains("active");
+      h.style.display = (show && activeScreen) ? "flex" : "none";
+      const t=h.querySelector(".balance-format-game-hint-text"); if(t) t.innerHTML=text;
+    });
   }
   function checkBalanceFormatThreshold(current){
     current=Math.round(Number(current)||0);
     const previous=Math.round(Number(localStorage.getItem(BALANCE_LAST_SEEN_KEY)||0));
     let notified=Math.round(Number(localStorage.getItem(BALANCE_HINT_KEY)||0));
     let crossed=0;
-    BALANCE_HINT_THRESHOLDS.forEach(t=>{ if(previous < t && current >= t && t > notified) crossed=t; });
+    for(const t of BALANCE_HINT_THRESHOLDS){
+      if(previous < t && current >= t && t > notified) crossed=t;
+    }
     if(crossed){
       notified=crossed;
       localStorage.setItem(BALANCE_HINT_KEY,String(notified));
-      const hint=document.getElementById("balanceFormatHint");
-      const hintText=document.getElementById("balanceFormatHintText");
-      if(hint && hintText){
-        const pretty=fmt(crossed);
-        hintText.innerHTML="🎉 Баланс достиг <b>"+pretty+" CR</b>. Теперь можно менять его формат: <b>OFF → МЛН → КК</b>.";
-        hint.style.display="flex";
-      }
     }
     localStorage.setItem(BALANCE_LAST_SEEN_KEY,String(current));
+    renderGameBalanceHint();
   }
   // Compact number formatting for the RATING tab.
   function fmtCompact(n){
@@ -1898,6 +1896,7 @@ await saveUser();
       renderRating();
     }
     if(name === "home") renderStreakCard();
+    renderGameBalanceHint();
     window.scrollTo(0,0);
   }
   document.querySelectorAll(".nav-item").forEach(n=>{
@@ -1995,10 +1994,11 @@ await saveUser();
   });
   const balanceFormatBtn = document.getElementById("balanceFormatBtn");
   if(balanceFormatBtn){
-    balanceFormatBtn.addEventListener("click", ()=>{
+    balanceFormatBtn.addEventListener("click", (e)=>{
+      const seg=e.target.closest("[data-balance-format]");
+      if(!seg) return;
       clickSound();
-      const idx = BALANCE_FORMATS.indexOf(balanceFormat);
-      balanceFormat = BALANCE_FORMATS[(idx + 1) % BALANCE_FORMATS.length];
+      balanceFormat = seg.dataset.balanceFormat;
       localStorage.setItem(BALANCE_FORMAT_KEY, balanceFormat);
       renderBalance();
       renderBalanceFormatControls();
