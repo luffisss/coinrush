@@ -1524,11 +1524,29 @@ function saveBalance(v){
   function fmtBalance(n){
     n = Math.round(Number(n)||0);
     if(balanceFormat === "off") return fmt(n);
-    const neg = n < 0; n = Math.abs(n);
-    if(n < 1000000) return (neg ? "-" : "") + fmt(n);
+    const neg = n < 0;
+    n = Math.abs(n);
+    const sign = neg ? "-" : "";
+
+    // МЛН: show millions once the balance reaches 1,000,000.
+    // Below one million keep the normal number so small balances stay readable.
+    if(balanceFormat === "million"){
+      if(n < 1000000) return sign + fmt(n);
+      const value = n / 1000000;
+      const out = value >= 100 ? Math.round(value).toLocaleString("ru-RU") : value.toFixed(value < 10 ? 2 : 1).replace(/\.0+$/, "");
+      return sign + out + " МЛН";
+    }
+
+    // КК: compact the balance from 10K upward.
+    // 10,000 -> 10K, 104,998 -> 105K, 1,000,000 -> 1 КК, etc.
+    if(n < 10000) return sign + fmt(n);
+    if(n < 1000000){
+      const k = Math.round(n / 1000);
+      return sign + k.toLocaleString("ru-RU") + "K";
+    }
     const value = n / 1000000;
-    const out = value.toFixed(value < 100 ? 1 : 0).replace(/\.0$/, "");
-    return (neg ? "-" : "") + out + (balanceFormat === "million" ? " МЛН" : " КК");
+    const out = value >= 100 ? Math.round(value).toLocaleString("ru-RU") : value.toFixed(value < 10 ? 2 : 1).replace(/\.0+$/, "");
+    return sign + out + " КК";
   }
   function balanceFormatLabel(){ return BALANCE_FORMAT_META[balanceFormat] || BALANCE_FORMAT_META.off; }
   function renderBalanceFormatControls(){
