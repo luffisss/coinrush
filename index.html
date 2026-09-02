@@ -729,7 +729,7 @@
       <label>BET AMOUNT</label>
       <div class="bet-input-row"><input class="bet-input" id="bjBetInput" inputmode="numeric" autocomplete="off" value="100" aria-label="Bet amount"><button class="btn btn-secondary" type="button" id="bjBetMax">MAX</button></div>
       <div class="bet-quick-row"><button class="bet-quick" type="button" data-bet-target="bj" data-bet-value="100">100</button><button class="bet-quick" type="button" data-bet-target="bj" data-bet-value="500">500</button><button class="bet-quick" type="button" data-bet-target="bj" data-bet-value="1000">1K</button><button class="bet-quick" type="button" data-bet-target="bj" data-bet-value="5000">5K</button><button class="bet-quick" type="button" data-bet-target="bj" data-bet-value="10000">10K</button></div>
-      <div class="bet-max-hint">MAX = current balance. If input is higher, it is automatically limited to the balance.</div>
+      <div class="bet-max-hint">MAX = Максимальная ставка</div>
     </div>
     <div class="bet-row" style="display:none;"><button class="bet-stepper-btn" id="bjBetMinus">-</button><div class="bet-amount" id="bjBetAmount">100 CR</div><button class="bet-stepper-btn" id="bjBetPlus">+</button></div>
     <div class="action-row" id="bjDealRow">
@@ -755,7 +755,7 @@
         <label>BET AMOUNT</label>
         <div class="bet-input-row"><input class="bet-input" id="towerBetInput" inputmode="numeric" autocomplete="off" value="100" aria-label="Tower bet amount"><button class="btn btn-secondary" type="button" id="towerBetMax">MAX</button></div>
         <div class="bet-quick-row"><button class="bet-quick" type="button" data-bet-target="tower" data-bet-value="100">100</button><button class="bet-quick" type="button" data-bet-target="tower" data-bet-value="500">500</button><button class="bet-quick" type="button" data-bet-target="tower" data-bet-value="1000">1K</button><button class="bet-quick" type="button" data-bet-target="tower" data-bet-value="5000">5K</button><button class="bet-quick" type="button" data-bet-target="tower" data-bet-value="10000">10K</button></div>
-        <div class="bet-max-hint">MAX = current balance. BET = MIN(INPUT, BALANCE).</div>
+        <div class="bet-max-hint">MAX = Максимальная ставка. BET = MIN(INPUT, BALANCE).</div>
       </div>
       <div class="bet-row" id="towerBetRow" style="display:none;"><button class="bet-stepper-btn" id="towerBetMinus">-</button><div class="bet-amount" id="towerBetAmount">100 CR</div><button class="bet-stepper-btn" id="towerBetPlus">+</button></div>
       <div class="action-row">
@@ -789,7 +789,7 @@
       <label>BET AMOUNT</label>
       <div class="bet-input-row"><input class="bet-input" id="rouletteBetInput" inputmode="numeric" autocomplete="off" value="50" aria-label="Roulette bet amount"><button class="btn btn-secondary" type="button" id="rouletteBetMax">MAX</button></div>
       <div class="bet-quick-row" id="chipRow"><button class="bet-quick" type="button" data-chip="100">100</button><button class="bet-quick" type="button" data-chip="500">500</button><button class="bet-quick" type="button" data-chip="1000">1K</button><button class="bet-quick" type="button" data-chip="5000">5K</button><button class="bet-quick" type="button" data-chip="10000">10K</button></div>
-      <div class="bet-max-hint">MAX = current balance. BET = MIN(INPUT, BALANCE).</div>
+      <div class="bet-max-hint">MAX = Максимальная ставка.</div>
     </div>
     <button class="btn btn-primary" id="spinBtn" style="width:100%; margin-top:10px;">КРУТИТЬ</button>
   </div>
@@ -814,7 +814,7 @@
       <label>BET AMOUNT</label>
       <div class="bet-input-row"><input class="bet-input" id="cfBetInput" inputmode="numeric" autocomplete="off" value="100" aria-label="Bet amount"><button class="btn btn-secondary" type="button" id="cfBetMax">MAX</button></div>
       <div class="bet-quick-row"><button class="bet-quick" type="button" data-bet-target="cf" data-bet-value="100">100</button><button class="bet-quick" type="button" data-bet-target="cf" data-bet-value="500">500</button><button class="bet-quick" type="button" data-bet-target="cf" data-bet-value="1000">1K</button><button class="bet-quick" type="button" data-bet-target="cf" data-bet-value="5000">5K</button><button class="bet-quick" type="button" data-bet-target="cf" data-bet-value="10000">10K</button></div>
-      <div class="bet-max-hint">MAX = current balance. If input is higher, it is automatically limited to the balance.</div>
+      <div class="bet-max-hint">MAX = Максимальная ставка.</div>
     </div>
     <div class="bet-row" style="display:none;"><button class="bet-stepper-btn" id="cfBetMinus">-</button><div class="bet-amount" id="cfBetAmount">100 CR</div><button class="bet-stepper-btn" id="cfBetPlus">+</button></div>
     <button class="btn btn-primary" id="cfFlipBtn" style="width:100%;">FLIP COIN</button>
@@ -841,9 +841,9 @@
     </div>
     <div class="id-row"><span style="color:var(--text2);font-size:12px;font-weight:700;">COINRUSH ID: <b id="profileIdFull" style="color:var(--text);">CR-00001</b></span><button class="copy-id-btn" id="copyIdBtn">COPY ID</button></div>
     <div class="profile-actions">
-      <button class="btn btn-secondary" id="editProfileBtn">EDIT NICKNAME</button>
-      <button class="btn btn-secondary" id="changeAvatarBtn">CHANGE AVATAR</button>
-      <button class="btn btn-secondary" id="avatarFramesBtn">🖼️ AVATAR FRAMES</button>
+      <button class="btn btn-secondary" id="editProfileBtn">Изменить имя</button>
+      <button class="btn btn-secondary" id="changeAvatarBtn">Сменить аватар</button>
+      <button class="btn btn-secondary" id="avatarFramesBtn">Рамки для аватара</button>
       <input type="file" id="avatarFileInput" accept="image/*" style="display:none;">
     </div>
     <div class="panel">
@@ -902,7 +902,7 @@
   <div class="modal-bg" id="adModal">
     <div class="modal-box">
       <h3>📺 Реклама</h3>
-      <p>Идёт демо-показ рекламы... не закрывай окно, награда придёт после полного просмотра.</p>
+      <p>Здесь может быть ваша реклама, награда придёт после полного просмотра.</p>
       <div class="ad-progress-bg"><div class="ad-progress-fill" id="adProgressFill"></div></div>
       <div class="ad-countdown" id="adCountdownText">5</div>
     </div>
