@@ -755,7 +755,7 @@
         <label>BET AMOUNT</label>
         <div class="bet-input-row"><input class="bet-input" id="towerBetInput" inputmode="numeric" autocomplete="off" value="100" aria-label="Tower bet amount"><button class="btn btn-secondary" type="button" id="towerBetMax">MAX</button></div>
         <div class="bet-quick-row"><button class="bet-quick" type="button" data-bet-target="tower" data-bet-value="100">100</button><button class="bet-quick" type="button" data-bet-target="tower" data-bet-value="500">500</button><button class="bet-quick" type="button" data-bet-target="tower" data-bet-value="1000">1K</button><button class="bet-quick" type="button" data-bet-target="tower" data-bet-value="5000">5K</button><button class="bet-quick" type="button" data-bet-target="tower" data-bet-value="10000">10K</button></div>
-        <div class="bet-max-hint">MAX = Максимальная ставка. BET = MIN(INPUT, BALANCE).</div>
+        <div class="bet-max-hint">MAX = Максимальная ставка.</div>
       </div>
       <div class="bet-row" id="towerBetRow" style="display:none;"><button class="bet-stepper-btn" id="towerBetMinus">-</button><div class="bet-amount" id="towerBetAmount">100 CR</div><button class="bet-stepper-btn" id="towerBetPlus">+</button></div>
       <div class="action-row">
@@ -2033,7 +2033,7 @@ await saveUser();
   document.getElementById("bjDealBtn").addEventListener("click", async ()=>{
     clickSound();
     if(bjInProgress) return;
-    bjBet=validateBet(bjBet); if(bjBet <= 0 || bjBet > balance){ toast("BET недоступен"); return; }
+    bjBet=validateBet(bjBet); if(bjBet <= 0 || bjBet > balance){ toast("Ваш баланс: 0"); return; }
     bjInProgress = true;
     changeBalance(-bjBet);
     bjDeck = freshDeck();
