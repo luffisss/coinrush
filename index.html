@@ -1460,9 +1460,6 @@ localStorage.setItem(
   publicUrl
 );
 
-// Синхронизируем с объектом пользователя
-u.avatar = publicUrl;
-
 // Сохраняем URL в users.avatar
 await saveUser();
 
@@ -1810,8 +1807,13 @@ await saveUser();
     checkMilestones();
     renderStreakCard();
   }
-  document.getElementById("restoreStreakBtn").addEventListener("click", ()=>{ clickSound(); restoreStreak(); });
-
+  const restoreBtn = document.getElementById("profileRestoreStreakBtn");
+if(restoreBtn){
+  restoreBtn.addEventListener("click", ()=>{
+    clickSound();
+    restoreStreak();
+  });
+}
   function openStreakDetails(){
     clickSound();
     renderStreakCalendar();
