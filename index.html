@@ -1092,8 +1092,8 @@
           <span>Формат баланса</span>
           <button class="balance-format-switch" id="balanceFormatBtn" type="button" aria-label="Формат баланса">
             <span class="balance-format-seg balance-format-off">OFF</span>
-            <span class="balance-format-seg balance-format-name">ТЫС</span>
-            <span class="balance-format-seg balance-format-short">K</span>
+            <span class="balance-format-seg balance-format-name">МЛН</span>
+            <span class="balance-format-seg balance-format-short">КК</span>
           </button>
         </div>
         <div id="balanceFormatHint" class="balance-format-hint" style="display:none;">
@@ -1501,12 +1501,11 @@ function saveBalance(v){
 
   /* ============ BALANCE UI ============ */
   function fmt(n){ return n.toLocaleString("ru-RU").replace(/,/g," "); }
-  const BALANCE_FORMATS = ["off","thousand","million","billion"];
+  const BALANCE_FORMATS = ["off","million","kk"];
   const BALANCE_FORMAT_META = {
-    off:{name:"OFF",short:""},
-    thousand:{name:"ТЫС",short:"K"},
+    off:{name:"МЛН",short:"КК"},
     million:{name:"МЛН",short:"КК"},
-    billion:{name:"МЛРД",short:"KKK"}
+    kk:{name:"МЛН",short:"КК"}
   };
   const BALANCE_HINT_THRESHOLDS = [10000,100000,1000000,10000000,100000000,1000000000,10000000000,100000000000,1000000000000];
   const BALANCE_HINT_KEY = "coinrush_balance_hint_threshold";
@@ -1520,17 +1519,10 @@ function saveBalance(v){
     n = Math.round(Number(n)||0);
     if(balanceFormat === "off") return fmt(n);
     const neg = n < 0; n = Math.abs(n);
-    let out;
-    if(balanceFormat === "thousand" && n >= 1000){
-      out = (n/1000).toFixed(n < 100000 ? 1 : 0).replace(/\.0$/, "") + "K";
-    } else if(balanceFormat === "million" && n >= 1000000){
-      out = (n/1000000).toFixed(n < 100000000 ? 1 : 0).replace(/\.0$/, "") + "КК";
-    } else if(balanceFormat === "billion" && n >= 1000000000){
-      out = (n/1000000000).toFixed(n < 100000000000 ? 1 : 0).replace(/\.0$/, "") + "KKK";
-    } else {
-      return (neg ? "-" : "") + fmt(n);
-    }
-    return (neg ? "-" : "") + out;
+    if(n < 1000000) return (neg ? "-" : "") + fmt(n);
+    const value = n / 1000000;
+    const out = value.toFixed(value < 100 ? 1 : 0).replace(/\.0$/, "");
+    return (neg ? "-" : "") + out + (balanceFormat === "million" ? " МЛН" : " КК");
   }
   function balanceFormatLabel(){
     return BALANCE_FORMAT_META[balanceFormat] || BALANCE_FORMAT_META.off;
@@ -1546,14 +1538,14 @@ function saveBalance(v){
       const name=btn.querySelector(".balance-format-name");
       const short=btn.querySelector(".balance-format-short");
       if(off) off.textContent="OFF";
-      if(name) name.textContent=meta.name;
-      if(short) short.textContent=meta.short;
+      if(name) name.textContent="МЛН";
+      if(short) short.textContent="КК";
     }
     if(hint && hintText){
       const threshold=Number(localStorage.getItem(BALANCE_HINT_KEY)||0);
       const next=BALANCE_HINT_THRESHOLDS.find(t=>t>threshold);
       if(balance >= 10000 && threshold > 0 && balance < next){
-        hintText.innerHTML="Можно менять формат баланса: <b>OFF → ТЫС/K → МЛН/КК → МЛРД/KKK</b>. Формат меняет только отображение, сам баланс не меняется.";
+        hintText.innerHTML="Можно менять формат баланса: <b>OFF → МЛН → КК</b>. Формат меняет только отображение, сам баланс не меняется.";
         hint.style.display="flex";
       } else {
         hint.style.display="none";
@@ -1573,7 +1565,7 @@ function saveBalance(v){
       const hintText=document.getElementById("balanceFormatHintText");
       if(hint && hintText){
         const pretty=fmt(crossed);
-        hintText.innerHTML="🎉 Баланс достиг <b>"+pretty+" CR</b>. Теперь можно менять его формат: <b>OFF → ТЫС/K → МЛН/КК → МЛРД/KKK</b>.";
+        hintText.innerHTML="🎉 Баланс достиг <b>"+pretty+" CR</b>. Теперь можно менять его формат: <b>OFF → МЛН → КК</b>.";
         hint.style.display="flex";
       }
     }
