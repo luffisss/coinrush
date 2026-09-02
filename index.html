@@ -646,6 +646,22 @@
   .streak-tab{flex:1;padding:10px;border-radius:12px;border:1px solid var(--border);background:var(--card);color:var(--text2);font-size:11px;font-weight:900;text-align:center;cursor:pointer;}
   .streak-tab.active{background:linear-gradient(135deg,var(--purple-light),var(--purple-dark));color:#fff;border-color:var(--purple);}
   .recovery-big{margin-top:10px;padding:12px;border-radius:14px;background:rgba(240,68,85,.10);border:1px solid var(--red);font-size:11px;}
+  .balance-format-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .balance-format-switch{display:flex;align-items:stretch;width:176px;height:40px;padding:0;border-radius:22px;border:1px solid var(--purple);background:var(--bg2);box-shadow:0 0 14px rgba(139,92,246,.22);overflow:hidden;cursor:pointer;color:var(--text);font:inherit;font-weight:900;}
+  .balance-format-seg{display:flex;align-items:center;justify-content:center;height:100%;font-size:11px;letter-spacing:.5px;transition:.18s ease;user-select:none;}
+  .balance-format-off{width:33%;color:var(--text2);background:rgba(255,255,255,.015);}
+  .balance-format-name{width:39%;color:var(--text);border-left:1px solid var(--border);border-right:1px solid var(--border);}
+  .balance-format-short{width:28%;color:var(--text2);}
+  .balance-format-switch.mode-off .balance-format-off,
+  .balance-format-switch.mode-thousand .balance-format-name,
+  .balance-format-switch.mode-million .balance-format-name,
+  .balance-format-switch.mode-billion .balance-format-name{background:linear-gradient(135deg,var(--purple-light),var(--purple-dark));color:#fff;box-shadow:0 0 16px rgba(139,92,246,.45);}
+  .balance-format-switch.mode-off .balance-format-name{color:var(--text2);background:transparent;box-shadow:none;}
+  .balance-format-switch.mode-off .balance-format-short{color:var(--text2);}
+  .balance-format-hint{position:relative;display:flex;align-items:flex-start;gap:7px;margin-top:8px;padding:9px 10px;border:1px solid var(--purple);border-radius:12px;background:rgba(139,92,246,.11);color:var(--text2);font-size:10px;line-height:1.4;box-shadow:0 0 12px rgba(139,92,246,.16);animation:balanceHintIn .28s ease;}
+  .balance-format-hint::before{content:"";position:absolute;right:62px;top:-7px;width:12px;height:12px;background:rgba(139,92,246,.11);border-left:1px solid var(--purple);border-top:1px solid var(--purple);transform:rotate(45deg);}
+  .balance-hint-arrow{position:relative;z-index:1;font-size:15px;line-height:1;}
+  @keyframes balanceHintIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
   .bet-editor{margin:10px 0 12px;padding:12px;border-radius:16px;background:var(--card);border:1px solid var(--border);}
   .bet-editor label{display:block;font-size:10px;color:var(--text2);font-weight:800;margin-bottom:6px;letter-spacing:.8px;}
   .bet-input-row{display:flex;gap:8px;align-items:center;}
@@ -1072,12 +1088,17 @@
       <h3>Меню</h3>
       <div class="menu-row">🔊 Звук <div class="switch on" id="soundSwitch"></div></div>
       <div class="menu-row" style="display:block;">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+        <div class="balance-format-row">
           <span>Формат баланса</span>
-          <button class="btn" id="balanceFormatBtn" type="button" style="padding:7px 12px;min-width:96px;">OFF</button>
+          <button class="balance-format-switch" id="balanceFormatBtn" type="button" aria-label="Формат баланса">
+            <span class="balance-format-seg balance-format-off">OFF</span>
+            <span class="balance-format-seg balance-format-name">ТЫС</span>
+            <span class="balance-format-seg balance-format-short">K</span>
+          </button>
         </div>
-        <div id="balanceFormatHint" style="display:none;margin-top:8px;font-size:11px;line-height:1.35;color:var(--text2);position:relative;padding:8px 10px;border:1px solid var(--border);border-radius:10px;background:rgba(139,92,246,.08);">
-          👉 Баланс от 100 000 CR можно показывать компактно. Нажимай кнопку, чтобы менять формат: <b>OFF → ТЫС/K → МЛН/КК → МЛРД/KKK</b>. Формат влияет только на отображение, сам баланс не меняется.
+        <div id="balanceFormatHint" class="balance-format-hint" style="display:none;">
+          <span class="balance-hint-arrow">👉</span>
+          <span id="balanceFormatHintText">При следующем пороге можно включить компактный формат баланса.</span>
         </div>
       </div>
       <div class="menu-row">Версия <span style="color:var(--text2);">CoinRush 2.0</span></div>
@@ -1481,6 +1502,15 @@ function saveBalance(v){
   /* ============ BALANCE UI ============ */
   function fmt(n){ return n.toLocaleString("ru-RU").replace(/,/g," "); }
   const BALANCE_FORMATS = ["off","thousand","million","billion"];
+  const BALANCE_FORMAT_META = {
+    off:{name:"OFF",short:""},
+    thousand:{name:"ТЫС",short:"K"},
+    million:{name:"МЛН",short:"КК"},
+    billion:{name:"МЛРД",short:"KKK"}
+  };
+  const BALANCE_HINT_THRESHOLDS = [10000,100000,1000000,10000000,100000000,1000000000,10000000000,100000000000,1000000000000];
+  const BALANCE_HINT_KEY = "coinrush_balance_hint_threshold";
+  const BALANCE_LAST_SEEN_KEY = "coinrush_balance_last_seen";
   function loadBalanceFormat(){
     const v = localStorage.getItem(BALANCE_FORMAT_KEY);
     return BALANCE_FORMATS.includes(v) ? v : "off";
@@ -1503,13 +1533,51 @@ function saveBalance(v){
     return (neg ? "-" : "") + out;
   }
   function balanceFormatLabel(){
-    return {off:"OFF",thousand:"ТЫС / K",million:"МЛН / КК",billion:"МЛРД / KKK"}[balanceFormat] || "OFF";
+    return BALANCE_FORMAT_META[balanceFormat] || BALANCE_FORMAT_META.off;
   }
   function renderBalanceFormatControls(){
     const btn=document.getElementById("balanceFormatBtn");
     const hint=document.getElementById("balanceFormatHint");
-    if(btn) btn.textContent=balanceFormatLabel();
-    if(hint) hint.style.display = balance >= 100000 ? "block" : "none";
+    const hintText=document.getElementById("balanceFormatHintText");
+    const meta=balanceFormatLabel();
+    if(btn){
+      btn.className="balance-format-switch mode-"+balanceFormat;
+      const off=btn.querySelector(".balance-format-off");
+      const name=btn.querySelector(".balance-format-name");
+      const short=btn.querySelector(".balance-format-short");
+      if(off) off.textContent="OFF";
+      if(name) name.textContent=meta.name;
+      if(short) short.textContent=meta.short;
+    }
+    if(hint && hintText){
+      const threshold=Number(localStorage.getItem(BALANCE_HINT_KEY)||0);
+      const next=BALANCE_HINT_THRESHOLDS.find(t=>t>threshold);
+      if(balance >= 10000 && threshold > 0 && balance < next){
+        hintText.innerHTML="Можно менять формат баланса: <b>OFF → ТЫС/K → МЛН/КК → МЛРД/KKK</b>. Формат меняет только отображение, сам баланс не меняется.";
+        hint.style.display="flex";
+      } else {
+        hint.style.display="none";
+      }
+    }
+  }
+  function checkBalanceFormatThreshold(current){
+    current=Math.round(Number(current)||0);
+    const previous=Math.round(Number(localStorage.getItem(BALANCE_LAST_SEEN_KEY)||0));
+    let notified=Math.round(Number(localStorage.getItem(BALANCE_HINT_KEY)||0));
+    let crossed=0;
+    BALANCE_HINT_THRESHOLDS.forEach(t=>{ if(previous < t && current >= t && t > notified) crossed=t; });
+    if(crossed){
+      notified=crossed;
+      localStorage.setItem(BALANCE_HINT_KEY,String(notified));
+      const hint=document.getElementById("balanceFormatHint");
+      const hintText=document.getElementById("balanceFormatHintText");
+      if(hint && hintText){
+        const pretty=fmt(crossed);
+        hintText.innerHTML="🎉 Баланс достиг <b>"+pretty+" CR</b>. Теперь можно менять его формат: <b>OFF → ТЫС/K → МЛН/КК → МЛРД/KKK</b>.";
+        hint.style.display="flex";
+      }
+    }
+    localStorage.setItem(BALANCE_LAST_SEEN_KEY,String(current));
   }
   // Compact number formatting for the RATING tab.
   function fmtCompact(n){
@@ -1536,6 +1604,7 @@ function saveBalance(v){
   function renderBalance(){
     document.getElementById("balanceText").textContent = fmtBalance(balance) + " CR";
     document.getElementById("profileBalance").textContent = fmtBalance(balance) + " CR";
+    checkBalanceFormatThreshold(balance);
     renderBalanceFormatControls();
   }
   function bumpBalance(delta){
@@ -1940,6 +2009,7 @@ await saveUser();
       balanceFormat = BALANCE_FORMATS[(idx + 1) % BALANCE_FORMATS.length];
       localStorage.setItem(BALANCE_FORMAT_KEY, balanceFormat);
       renderBalance();
+      renderBalanceFormatControls();
     });
   }
   document.getElementById("claimBonusBtn").addEventListener("click", ()=>{
