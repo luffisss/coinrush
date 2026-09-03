@@ -3009,7 +3009,17 @@ if(restoreBtn){
       rouletteRound=round;
       if(round.status==="betting" && new Date(round.betting_ends_at).getTime()>Date.now()){
         rouletteRenderCountdown(round);
-        rouletteScheduleFinish(round);
+        // A round may exist without any bets. Do not start/finish an empty round.
+        // We only schedule the server finish timer when at least one bet exists.
+        try{
+          const {count,error}=await supabaseClient
+            .from("roulette_bets")
+            .select("id",{count:"exact",head:true})
+            .eq("round_id",round.id);
+          if(!error && Number(count||0)>0) rouletteScheduleFinish(round);
+        }catch(e){
+          console.warn("CoinRush roulette bet count:",e.message||e);
+        }
         syncBetLockUI();
         return;
       }
@@ -3138,7 +3148,7 @@ if(restoreBtn){
           throw new Error("Раунд не открылся");
         }
         rouletteRenderCountdown(rouletteRound);
-        rouletteScheduleFinish(rouletteRound);
+        // Do not schedule the finish until the bet is actually accepted below.
       }catch(e){
         console.warn("CoinRush roulette first bet start:",e.message||e);
         await rouletteSyncRound();
@@ -3176,6 +3186,8 @@ if(restoreBtn){
       }
       setRouletteOnlineStatus(`РАУНД #${rouletteRound.round_number} • СТАВКА ПРИНЯТА • ОЖИДАЕМ РЕЗУЛЬТАТ`,"live");
       toast(`🎰 Ставка ${fmt(rouletteBetAmount)} CR принята`);
+      // The round now definitely has a bet, so schedule its finish.
+      rouletteScheduleFinish(rouletteRound);
       rouletteSpinning=false; // selection is locked by rouletteBetPlaced, but countdown continues
       syncBetLockUI();
     }catch(e){
