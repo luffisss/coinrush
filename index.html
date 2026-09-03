@@ -437,6 +437,10 @@
   .roulette-result{ text-align:center; margin:14px 0; min-height:50px; }
   .roulette-result .num{ font-size:28px; font-weight:900; }
   .roulette-result .lbl{ font-size:13px; color:var(--text2); font-weight:700; }
+  .roulette-online-status{ text-align:center; margin:2px 0 8px; font-size:11px; font-weight:800; color:var(--text2); letter-spacing:.3px; }
+  .roulette-online-status.live{ color:var(--green); }
+  .roulette-online-status.wait{ color:var(--violet); }
+  .roulette-online-status.error{ color:var(--red); }
   .bet-chip-row{ display:flex; gap:8px; overflow-x:auto; margin:14px 0; }
   .chip{
     flex-shrink:0; padding:10px 16px; border-radius:14px; background:var(--card); border:1px solid var(--border);
@@ -899,6 +903,7 @@
         <div class="wheel-center">COINRUSH</div>
       </div>
     </div>
+    <div class="roulette-online-status" id="rouletteOnlineStatus">ПОДКЛЮЧЕНИЕ К РУЛЕТКЕ…</div>
     <div class="roulette-result" id="rouletteResult"></div>
     <div class="color-bet-row">
       <div class="color-bet red" data-bet="red">🔴 RED (x2)</div>
@@ -2070,6 +2075,8 @@ await saveUser();
   // Classic European (single-zero) roulette wheel sequence — 37 pockets, 0-36.
   const EUROPEAN_WHEEL_ORDER = [0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
   let rouletteBetAmount = 50, rouletteColorBet = null, rouletteNumberBet = null, rouletteSpinning = false;
+  let rouletteRound = null, roulettePollTimer = null, rouletteFinishTimer = null, rouletteBetPlaced = false;
+  let rouletteLastFinishedRoundId = null;
 
   let cfSide = "heads", cfBet = 100, cfFlipping = false, cfHalfTurns = 0;
 
@@ -2463,7 +2470,7 @@ if(restoreBtn){
     if(game==="bj") return bjInProgress || bjActionLocked;
     if(game==="tower") return towerActive;
     if(game==="cf") return cfFlipping;
-    if(game==="roulette") return rouletteSpinning;
+    if(game==="roulette") return rouletteSpinning || rouletteBetPlaced;
     return false;
   }
   function setBetAmount(game,value){
@@ -2894,6 +2901,13 @@ if(restoreBtn){
   }
   buildWheel();
 
+  function setRouletteOnlineStatus(text, state=""){
+    const el=document.getElementById("rouletteOnlineStatus");
+    if(!el) return;
+    el.textContent=text;
+    el.className="roulette-online-status" + (state ? " "+state : "");
+  }
+
   function buildNumberGrid(){
     const grid = document.getElementById("numberGrid");
     grid.innerHTML = "";
@@ -2904,6 +2918,7 @@ if(restoreBtn){
       cell.textContent = n;
       cell.dataset.num = n;
       cell.addEventListener("click", ()=>{
+        if(isBetLocked("roulette") || rouletteBetPlaced) return;
         clickSound();
         rouletteNumberBet = n;
         rouletteColorBet = null;
@@ -2918,7 +2933,7 @@ if(restoreBtn){
 
   document.querySelectorAll(".color-bet").forEach(cb=>{
     cb.addEventListener("click", ()=>{
-      if(rouletteSpinning) return;
+      if(isBetLocked("roulette") || rouletteBetPlaced) return;
       clickSound();
       rouletteColorBet = cb.dataset.bet;
       rouletteNumberBet = null;
@@ -2927,45 +2942,141 @@ if(restoreBtn){
       cb.classList.add("selected");
     });
   });
-  document.querySelectorAll(".chip").forEach(ch=>{
-    ch.addEventListener("click", ()=>{
-      clickSound();
-      document.querySelectorAll(".chip").forEach(c=>c.classList.remove("active"));
-      ch.classList.add("active");
-      rouletteBetAmount = parseInt(ch.dataset.chip, 10);
-    });
-  });
 
   function rouletteReset(){
-    document.getElementById("rouletteResult").innerHTML = "";
+    const result=document.getElementById("rouletteResult");
+    if(result) result.innerHTML = "";
     rouletteSpinning = false;
+    rouletteBetPlaced = false;
+    rouletteRound = null;
+    if(rouletteFinishTimer) clearTimeout(rouletteFinishTimer);
+    if(roulettePollTimer) clearInterval(roulettePollTimer);
+    setRouletteOnlineStatus("ПОДКЛЮЧЕНИЕ К РУЛЕТКЕ…", "wait");
+    syncBetLockUI();
+    startRouletteOnline();
+  }
+
+  async function rouletteGetLatestRound(){
+    if(!supabaseClient) throw new Error("Supabase недоступен");
+    const {data,error}=await supabaseClient
+      .from("roulette_rounds")
+      .select("id,round_number,status,betting_started_at,betting_ends_at,winning_number,winning_color,finished_at")
+      .order("id",{ascending:false})
+      .limit(1)
+      .maybeSingle();
+    if(error) throw error;
+    return data || null;
+  }
+
+  async function rouletteStartRoundIfNeeded(){
+    if(!supabaseClient) return null;
+    const latest=await rouletteGetLatestRound();
+    const active=latest && ((latest.status==="betting" && new Date(latest.betting_ends_at).getTime()>Date.now()) || latest.status==="spinning");
+    if(active) return latest;
+    const {data,error}=await supabaseClient.rpc("start_roulette_round",{p_duration_seconds:15});
+    if(error) throw error;
+    if(data && data.success===false) return await rouletteGetLatestRound();
+    return await rouletteGetLatestRound();
+  }
+
+  function rouletteScheduleFinish(round){
+    if(!round || !round.id || round.status!=="betting") return;
+    if(rouletteFinishTimer) clearTimeout(rouletteFinishTimer);
+    const delay=Math.max(0,new Date(round.betting_ends_at).getTime()-Date.now()+150);
+    rouletteFinishTimer=setTimeout(async ()=>{
+      try{
+        const {data,error}=await supabaseClient.rpc("finish_roulette_round",{p_round_id:round.id});
+        if(error) throw error;
+        if(data && data.success===false && data.message!=="Раунд уже завершён"){
+          console.warn("CoinRush roulette finish:",data.message);
+        }
+      }catch(e){
+        console.warn("CoinRush roulette finish:",e.message||e);
+      }
+      rouletteSyncRound();
+    },delay);
+  }
+
+  function rouletteRenderCountdown(round){
+    if(!round || round.status!=="betting") return;
+    const left=Math.max(0,new Date(round.betting_ends_at).getTime()-Date.now());
+    const sec=Math.ceil(left/1000);
+    setRouletteOnlineStatus(`РАУНД #${round.round_number} • СТАВКИ ОТКРЫТЫ • ${sec}с`,"live");
+  }
+
+  async function rouletteSyncRound(){
+    try{
+      const round=await rouletteGetLatestRound();
+      if(!round) return;
+      rouletteRound=round;
+      if(round.status==="betting" && new Date(round.betting_ends_at).getTime()>Date.now()){
+        rouletteRenderCountdown(round);
+        rouletteScheduleFinish(round);
+        syncBetLockUI();
+        return;
+      }
+      if(round.status==="spinning"){
+        setRouletteOnlineStatus(`РАУНД #${round.round_number} • ОПРЕДЕЛЯЕМ РЕЗУЛЬТАТ…`,"wait");
+        syncBetLockUI();
+        return;
+      }
+      if(round.status==="finished"){
+        if(rouletteLastFinishedRoundId!==round.id){
+          rouletteLastFinishedRoundId=round.id;
+          rouletteShowServerResult(round);
+        }
+        setRouletteOnlineStatus(`РАУНД #${round.round_number} • РЕЗУЛЬТАТ: ${round.winning_number}`,"live");
+        syncBetLockUI();
+        // Start next round shortly after everyone has seen the result.
+        setTimeout(()=>rouletteStartNextRound(),1200);
+      }
+    }catch(e){
+      console.warn("CoinRush roulette sync:",e.message||e);
+      setRouletteOnlineStatus("РУЛЕТКА НЕДОСТУПНА — ПРОВЕРЬ SUPABASE", "error");
+    }
+  }
+
+  async function rouletteStartNextRound(){
+    if(!document.getElementById("screen-roulette")?.classList.contains("active")) return;
+    try{
+      const round=await rouletteStartRoundIfNeeded();
+      if(round){
+        rouletteRound=round;
+        rouletteSyncRound();
+      }
+    }catch(e){
+      console.warn("CoinRush roulette start:",e.message||e);
+      setRouletteOnlineStatus("ОШИБКА ЗАПУСКА РАУНДА", "error");
+    }
+  }
+
+  async function startRouletteOnline(){
+    if(!supabaseClient || !getTelegramUser()){
+      setRouletteOnlineStatus("РУЛЕТКА ДОСТУПНА ТОЛЬКО ОНЛАЙН В TELEGRAM", "error");
+      return;
+    }
+    try{
+      await rouletteStartNextRound();
+      if(roulettePollTimer) clearInterval(roulettePollTimer);
+      roulettePollTimer=setInterval(()=>{
+        if(document.getElementById("screen-roulette")?.classList.contains("active")) rouletteSyncRound();
+      },1000);
+    }catch(e){
+      setRouletteOnlineStatus("ОШИБКА ПОДКЛЮЧЕНИЯ", "error");
+    }
   }
 
   let rouletteRotation = 0;
-  function spinRoulette(){
-    if(rouletteSpinning) return;
-    if(rouletteColorBet === null && rouletteNumberBet === null){ toast("Выбери цвет или число"); return; }
-    rouletteBetAmount=validateBet(rouletteBetAmount); if(rouletteBetAmount <= 0 || rouletteBetAmount > balance){ toast("BET недоступен"); return; }
-    rouletteSpinning = true;
-    syncBetLockUI();
-    changeBalance(-rouletteBetAmount);
-    document.getElementById("rouletteResult").innerHTML = "";
-
-    // The winning number is chosen first (true random, independent of the visual wheel),
-    // then the wheel is rotated so that exact number's slice lands under the pointer —
-    // logic and visual result are always in sync.
+  function rouletteAnimateToNumber(winningNumber, done){
     const order = JSON.parse(document.getElementById("rouletteWheel").dataset.order);
-    const winningNumber = Math.floor(Math.random()*37);
     const winIndex = order.indexOf(winningNumber);
     const seg = 360/order.length;
     const targetAngle = 360 - (winIndex*seg + seg/2);
     const extraSpins = 6 + Math.floor(Math.random()*4);
     rouletteRotation += extraSpins*360 + targetAngle - (rouletteRotation % 360);
-
     const wheelEl = document.getElementById("rouletteWheel");
     wheelEl.style.transform = `rotate(${rouletteRotation}deg)`;
 
-    // decelerating spin ticks
     let tickDelay = 60;
     function scheduleTick(){
       tone(200 + Math.random()*150, 0.03, "square", 0.025);
@@ -2973,37 +3084,96 @@ if(restoreBtn){
       if(tickDelay < 900) setTimeout(scheduleTick, tickDelay);
     }
     scheduleTick();
-
     setTimeout(()=>{
-      tone(140, 0.25, "sine", 0.15); // stop thud
-      const col = numberColor(winningNumber);
-      let winAmount = 0;
-      if(rouletteNumberBet !== null){
-        if(rouletteNumberBet === winningNumber) winAmount = rouletteBetAmount * 36;
-      } else if(rouletteColorBet !== null){
-        if(rouletteColorBet === col) winAmount = rouletteBetAmount * (col === "zero" ? 36 : 2);
-      }
-      const net = winAmount - rouletteBetAmount;
-      const resEl = document.getElementById("rouletteResult");
-      const colorLabel = col === "red" ? "RED" : col === "black" ? "BLACK" : "GREEN";
-      resEl.innerHTML = `<div class="num" style="color:${col==='red'?'var(--red)':col==='black'?'var(--text)':'var(--roulette-green)'}">${winningNumber}</div><div class="lbl">${colorLabel}</div>`;
-      document.getElementById("app").classList.add("screen-shake");
-      setTimeout(()=>document.getElementById("app").classList.remove("screen-shake"), 350);
-
-      if(winAmount > 0){
-        changeBalance(winAmount);
-        confetti(); winSound();
-        toast(`🎰 Выпало ${winningNumber} ${colorLabel} — WIN +${fmt(net)} CR`);
-      } else {
-        loseSound();
-        toast(`🎰 Выпало ${winningNumber} ${colorLabel} — LOSE -${fmt(rouletteBetAmount)} CR`);
-      }
-      addHistory("ROULETTE", net, "🎡");
-      rouletteSpinning = false;
-      syncBetLockUI();
-    }, 5200);
+      tone(140, 0.25, "sine", 0.15);
+      done();
+    },5200);
   }
-  document.getElementById("spinBtn").addEventListener("click", ()=>{ clickSound(); spinRoulette(); });
+
+  function rouletteShowServerResult(round){
+    if(round.winning_number===null || round.winning_number===undefined) return;
+    rouletteSpinning=true;
+    syncBetLockUI();
+    const winningNumber=Number(round.winning_number);
+    const col=numberColor(winningNumber);
+    rouletteAnimateToNumber(winningNumber, async ()=>{
+      const colorLabel=col==="red"?"RED":col==="black"?"BLACK":"GREEN";
+      const resEl=document.getElementById("rouletteResult");
+      resEl.innerHTML=`<div class="num" style="color:${col==='red'?'var(--red)':col==='black'?'var(--text)':'var(--roulette-green)'}">${winningNumber}</div><div class="lbl">${colorLabel}</div>`;
+      document.getElementById("app").classList.add("screen-shake");
+      setTimeout(()=>document.getElementById("app").classList.remove("screen-shake"),350);
+
+      // The server already applied the payout. Only the result is rendered here.
+      if(rouletteBetPlaced){
+        try{
+          const tg=getTelegramUser();
+          const {data,error}=await supabaseClient.from("users").select("balance").eq("telegram_id",String(tg.id)).maybeSingle();
+          if(!error && data && data.balance!==undefined && data.balance!==null){
+            const old=balance;
+            balance=saveBalance(Number(data.balance));
+            renderBalance();
+            bumpBalance(balance-old);
+          }
+        }catch(e){ console.warn("CoinRush roulette balance sync:",e.message||e); }
+      }
+      rouletteSpinning=false;
+      rouletteBetPlaced=false;
+      syncBetLockUI();
+    });
+  }
+
+  async function placeOnlineRouletteBet(){
+    if(rouletteSpinning || rouletteBetPlaced) return;
+    if(!rouletteRound || rouletteRound.status!=="betting" || new Date(rouletteRound.betting_ends_at).getTime()<=Date.now()){
+      await rouletteSyncRound();
+      if(!rouletteRound || rouletteRound.status!=="betting"){
+        toast("⏳ Дождись открытия нового раунда");
+        return;
+      }
+    }
+    if(rouletteColorBet===null && rouletteNumberBet===null){ toast("Выбери цвет или число"); return; }
+    rouletteBetAmount=validateBet(rouletteBetAmount);
+    if(rouletteBetAmount<=0 || rouletteBetAmount>balance){ toast("BET недоступен"); return; }
+
+    const tg=getTelegramUser();
+    if(!tg || !supabaseClient){ toast("Рулетка доступна только онлайн"); return; }
+
+    rouletteSpinning=true;
+    syncBetLockUI();
+    setRouletteOnlineStatus(`РАУНД #${rouletteRound.round_number} • СТАВКА ОТПРАВЛЯЕТСЯ…`,"wait");
+
+    try{
+      const betType=rouletteNumberBet!==null ? "number" : (rouletteColorBet==="zero" ? "green" : rouletteColorBet);
+      const betValue=rouletteNumberBet!==null ? rouletteNumberBet : null;
+      const {data,error}=await supabaseClient.rpc("place_roulette_bet",{
+        p_telegram_id:String(tg.id),
+        p_bet_type:betType,
+        p_bet_value:betValue,
+        p_amount:rouletteBetAmount
+      });
+      if(error) throw error;
+      if(!data || data.success!==true) throw new Error(data?.message || "Ставка отклонена");
+
+      rouletteBetPlaced=true;
+      // Server is the source of truth for the balance.
+      if(data.balance!==undefined && data.balance!==null){
+        balance=saveBalance(Number(data.balance));
+        renderBalance();
+      }
+      setRouletteOnlineStatus(`РАУНД #${rouletteRound.round_number} • СТАВКА ПРИНЯТА • ОЖИДАЕМ РЕЗУЛЬТАТ`,"live");
+      toast(`🎰 Ставка ${fmt(rouletteBetAmount)} CR принята`);
+      rouletteSpinning=false; // selection is locked by rouletteBetPlaced, but countdown continues
+      syncBetLockUI();
+    }catch(e){
+      rouletteSpinning=false;
+      rouletteBetPlaced=false;
+      syncBetLockUI();
+      toast("❌ " + (e.message || "Не удалось поставить"));
+      setRouletteOnlineStatus(`РАУНД #${rouletteRound?.round_number||"—"} • СТАВКА ОТКЛОНЕНА`,"error");
+    }
+  }
+
+  document.getElementById("spinBtn").addEventListener("click", ()=>{ clickSound(); placeOnlineRouletteBet(); });
 
   /* ================================================================
      COIN FLIP
