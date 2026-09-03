@@ -1588,7 +1588,7 @@ function saveBalance(v){
   function renderGameBalanceHint(){
     const {notified,next}=currentBalanceHint();
     const show = balance >= 10000 && notified >= 10000;
-    const text = next ? `💡 Баланс уже ${fmt(notified)} CR. В меню можно менять формат: <b>OFF / МЛН / КК</b>. Следующая подсказка появится на <b>${fmt(next)} CR</b>.` : `💡 Формат баланса можно менять в меню: <b>OFF / МЛН / КК</b>.`;
+    const text = next ? `💡 Баланс уже ${fmt(notified)} CR. В меню можно менять формат: <b>OFF / КК</b>. Следующая подсказка появится на <b>${fmt(next)} CR</b>.` : `💡 Формат баланса можно менять в меню: <b>OFF / КК</b>.`;
     document.querySelectorAll("[data-balance-game-hint]").forEach(h=>{
       const activeScreen=h.closest(".screen")?.classList.contains("active");
       h.style.display = (show && activeScreen) ? "flex" : "none";
