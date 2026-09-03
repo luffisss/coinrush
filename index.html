@@ -2972,11 +2972,9 @@ if(restoreBtn){
     if(!supabaseClient) return null;
     const latest=await rouletteGetLatestRound();
     const active=latest && ((latest.status==="betting" && new Date(latest.betting_ends_at).getTime()>Date.now()) || latest.status==="spinning");
-    if(active) return latest;
-    const {data,error}=await supabaseClient.rpc("start_roulette_round",{p_duration_seconds:15});
-    if(error) throw error;
-    if(data && data.success===false) return await rouletteGetLatestRound();
-    return await rouletteGetLatestRound();
+    // ВАЖНО: новый раунд НЕ создаём при открытии рулетки.
+    // Раунд стартует только после первой реальной ставки.
+    return active ? latest : null;
   }
 
   function rouletteScheduleFinish(round){
@@ -3025,10 +3023,9 @@ if(restoreBtn){
           rouletteLastFinishedRoundId=round.id;
           rouletteShowServerResult(round);
         }
-        setRouletteOnlineStatus(`РАУНД #${round.round_number} • РЕЗУЛЬТАТ: ${round.winning_number}`,"live");
+        setRouletteOnlineStatus(`РАУНД #${round.round_number} • РЕЗУЛЬТАТ: ${round.winning_number} • ЖДЁМ ПЕРВУЮ СТАВКУ`,"live");
         syncBetLockUI();
-        // Start next round shortly after everyone has seen the result.
-        setTimeout(()=>rouletteStartNextRound(),1200);
+        // Новый раунд НЕ запускаем автоматически. Его создаст первая ставка.
       }
     }catch(e){
       console.warn("CoinRush roulette sync:",e.message||e);
@@ -3038,15 +3035,11 @@ if(restoreBtn){
 
   async function rouletteStartNextRound(){
     if(!document.getElementById("screen-roulette")?.classList.contains("active")) return;
+    // Только синхронизация. Новый раунд создаётся первой ставкой.
     try{
-      const round=await rouletteStartRoundIfNeeded();
-      if(round){
-        rouletteRound=round;
-        rouletteSyncRound();
-      }
+      await rouletteSyncRound();
     }catch(e){
-      console.warn("CoinRush roulette start:",e.message||e);
-      setRouletteOnlineStatus("ОШИБКА ЗАПУСКА РАУНДА", "error");
+      console.warn("CoinRush roulette sync:",e.message||e);
     }
   }
 
@@ -3056,7 +3049,7 @@ if(restoreBtn){
       return;
     }
     try{
-      await rouletteStartNextRound();
+      await rouletteSyncRound();
       if(roulettePollTimer) clearInterval(roulettePollTimer);
       roulettePollTimer=setInterval(()=>{
         if(document.getElementById("screen-roulette")?.classList.contains("active")) rouletteSyncRound();
@@ -3124,14 +3117,35 @@ if(restoreBtn){
 
   async function placeOnlineRouletteBet(){
     if(rouletteSpinning || rouletteBetPlaced) return;
+    if(rouletteColorBet===null && rouletteNumberBet===null){ toast("Выбери цвет или число"); return; }
+
+    // Если активного раунда нет — именно ПЕРВАЯ СТАВКА создаёт его.
     if(!rouletteRound || rouletteRound.status!=="betting" || new Date(rouletteRound.betting_ends_at).getTime()<=Date.now()){
-      await rouletteSyncRound();
-      if(!rouletteRound || rouletteRound.status!=="betting"){
-        toast("⏳ Дождись открытия нового раунда");
+      try{
+        setRouletteOnlineStatus("ПЕРВАЯ СТАВКА • ЗАПУСКАЕМ РАУНД…","wait");
+        const {data:startData,error:startError}=await supabaseClient.rpc("start_roulette_round",{p_duration_seconds:15});
+        if(startError) throw startError;
+        if(startData && startData.success===false){
+          const active=await rouletteGetLatestRound();
+          if(!active || active.status!=="betting" || new Date(active.betting_ends_at).getTime()<=Date.now()){
+            throw new Error(startData.message || "Не удалось открыть раунд");
+          }
+          rouletteRound=active;
+        }else{
+          rouletteRound=await rouletteGetLatestRound();
+        }
+        if(!rouletteRound || rouletteRound.status!=="betting"){
+          throw new Error("Раунд не открылся");
+        }
+        rouletteRenderCountdown(rouletteRound);
+        rouletteScheduleFinish(rouletteRound);
+      }catch(e){
+        console.warn("CoinRush roulette first bet start:",e.message||e);
+        await rouletteSyncRound();
+        toast("⏳ Не удалось открыть раунд");
         return;
       }
     }
-    if(rouletteColorBet===null && rouletteNumberBet===null){ toast("Выбери цвет или число"); return; }
     rouletteBetAmount=validateBet(rouletteBetAmount);
     if(rouletteBetAmount<=0 || rouletteBetAmount>balance){ toast("BET недоступен"); return; }
 
@@ -3143,12 +3157,8 @@ if(restoreBtn){
     setRouletteOnlineStatus(`РАУНД #${rouletteRound.round_number} • СТАВКА ОТПРАВЛЯЕТСЯ…`,"wait");
 
     try{
-      // Supabase RPC expects: number + value OR color + color value.
-      // The current SQL function uses p_bet_value as TEXT.
-      const betType=rouletteNumberBet!==null ? "number" : "color";
-      const betValue=rouletteNumberBet!==null
-        ? String(rouletteNumberBet)
-        : (rouletteColorBet==="zero" ? "green" : rouletteColorBet);
+      const betType=rouletteNumberBet!==null ? "number" : (rouletteColorBet==="zero" ? "green" : rouletteColorBet);
+      const betValue=rouletteNumberBet!==null ? rouletteNumberBet : null;
       const {data,error}=await supabaseClient.rpc("place_roulette_bet",{
         p_telegram_id:String(tg.id),
         p_bet_type:betType,
