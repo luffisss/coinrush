@@ -441,6 +441,35 @@
   .roulette-online-status.live{ color:var(--green); }
   .roulette-online-status.wait{ color:var(--violet); }
   .roulette-online-status.error{ color:var(--red); }
+  .roulette-history{ margin:0 0 12px; }
+  .roulette-history-title,.roulette-participants-title{ font-size:11px; font-weight:900; letter-spacing:.5px; color:var(--text2); margin:0 0 7px; text-transform:uppercase; }
+  .roulette-history-list{ display:flex; gap:7px; overflow-x:auto; padding:1px 1px 4px; scrollbar-width:none; }
+  .roulette-history-list::-webkit-scrollbar{ display:none; }
+  .roulette-history-item{ flex:0 0 54px; height:54px; border-radius:14px; border:1px solid var(--border); background:var(--card); display:flex; flex-direction:column; align-items:center; justify-content:center; font-weight:900; cursor:pointer; }
+  .roulette-history-item .rh-num{ font-size:16px; line-height:1; }
+  .roulette-history-item .rh-round{ font-size:8px; color:var(--text2); margin-top:4px; }
+  .roulette-history-item.red{ border-color:rgba(240,68,85,.35); }
+  .roulette-history-item.black{ border-color:rgba(255,255,255,.12); }
+  .roulette-history-item.zero{ border-color:rgba(24,185,91,.4); }
+  .roulette-number-toggle{ width:100%; margin:0 0 8px; }
+  .roulette-number-panel{ display:none; }
+  .roulette-number-panel.open{ display:block; animation:roulettePanelIn .18s ease; }
+  @keyframes roulettePanelIn{ from{opacity:0; transform:translateY(-5px);} to{opacity:1; transform:translateY(0);} }
+  .roulette-participants{ margin-top:12px; }
+  .roulette-participants-list{ display:flex; flex-direction:column; gap:6px; max-height:230px; overflow-y:auto; }
+  .roulette-participant{ display:flex; align-items:center; gap:8px; padding:9px 10px; border-radius:12px; background:var(--card); border:1px solid var(--border); }
+  .roulette-participant-main{ flex:1; min-width:0; }
+  .roulette-participant-name{ font-size:12px; font-weight:900; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .roulette-participant-bet{ font-size:10px; color:var(--text2); margin-top:2px; }
+  .roulette-participant-amount{ font-size:12px; font-weight:900; white-space:nowrap; }
+  .roulette-participant-result{ font-size:10px; font-weight:900; margin-top:2px; text-align:right; }
+  .roulette-participant-result.win{ color:var(--green); }
+  .roulette-participant-result.loss{ color:var(--red); }
+  .roulette-participant-dot{ width:8px; height:8px; border-radius:50%; flex:0 0 8px; }
+  .roulette-participant-dot.red{ background:var(--red); }
+  .roulette-participant-dot.black{ background:#777; }
+  .roulette-participant-dot.zero{ background:var(--roulette-green); }
+  .roulette-empty{ color:var(--text2); font-size:11px; text-align:center; padding:10px 0; }
   .bet-chip-row{ display:flex; gap:8px; overflow-x:auto; margin:14px 0; }
   .chip{
     flex-shrink:0; padding:10px 16px; border-radius:14px; background:var(--card); border:1px solid var(--border);
@@ -896,6 +925,12 @@
       <span class="balance-hint-arrow">👉</span>
       <span class="balance-format-game-hint-text"></span>
     </div>
+
+    <div class="roulette-history">
+      <div class="roulette-history-title">ИСТОРИЯ ИГР</div>
+      <div class="roulette-history-list" id="rouletteHistoryList"></div>
+    </div>
+
     <div class="wheel-wrap">
       <div class="pointer">▼</div>
       <div class="wheel-outer">
@@ -904,23 +939,33 @@
       </div>
     </div>
     <div class="roulette-online-status" id="rouletteOnlineStatus">ПОДКЛЮЧЕНИЕ К РУЛЕТКЕ…</div>
+
     <div class="roulette-result" id="rouletteResult"></div>
+
     <div class="color-bet-row">
       <div class="color-bet red" data-bet="red">🔴 RED (x2)</div>
-      <div class="color-bet black" data-bet="black">⚫ BLACK (x2)</div>
       <div class="color-bet zero" data-bet="zero">🟢 ZERO (x36)</div>
+      <div class="color-bet black" data-bet="black">⚫ BLACK (x2)</div>
     </div>
-    <div class="panel" style="padding:12px;">
-      <div style="font-size:12px; color:var(--text2); font-weight:700; margin-bottom:8px;">ИЛИ ВЫБЕРИ ЧИСЛО (x36)</div>
+
+    <button class="btn btn-secondary roulette-number-toggle" id="rouletteNumberToggle" type="button">ПОСТАВИТЬ НА ЧИСЛО <span id="rouletteNumberToggleArrow">⌄</span></button>
+    <div class="panel roulette-number-panel" id="rouletteNumberPanel" style="padding:12px;">
+      <div style="font-size:12px; color:var(--text2); font-weight:700; margin-bottom:8px;">ВЫБЕРИ ЧИСЛО (x36)</div>
       <div class="number-grid" id="numberGrid"></div>
     </div>
+
     <div class="bet-editor" data-bet-game="roulette">
       <label>BET AMOUNT</label>
       <div class="bet-input-row"><input class="bet-input" id="rouletteBetInput" inputmode="numeric" autocomplete="off" value="50" aria-label="Roulette bet amount"><button class="btn btn-secondary" type="button" id="rouletteBetMax">MAX</button></div>
       <div class="bet-quick-row" id="chipRow"><button class="bet-quick" type="button" data-chip="100">100</button><button class="bet-quick" type="button" data-chip="500">500</button><button class="bet-quick" type="button" data-chip="1000">1K</button><button class="bet-quick" type="button" data-chip="5000">5K</button><button class="bet-quick" type="button" data-chip="10000">10K</button></div>
       <div class="bet-max-hint">MAX = Максимальная ставка.</div>
     </div>
-    <button class="btn btn-primary" id="spinBtn" style="width:100%; margin-top:10px;">КРУТИТЬ</button>
+    <button class="btn btn-primary" id="spinBtn" style="width:100%; margin-top:10px;">ПОСТАВИТЬ</button>
+
+    <div class="roulette-participants">
+      <div class="roulette-participants-title">УЧАСТНИКИ РАУНДА</div>
+      <div class="roulette-participants-list" id="rouletteParticipantsList"></div>
+    </div>
   </div>
 
   <!-- COIN FLIP -->
@@ -2901,6 +2946,90 @@ if(restoreBtn){
   }
   buildWheel();
 
+  function rouletteBetLabel(bet){
+    if(!bet) return "—";
+    if(bet.bet_type === "number") return `Число ${bet.bet_value}`;
+    if(bet.bet_type === "green" || bet.bet_type === "zero") return "ZERO";
+    return bet.bet_type === "red" ? "RED" : "BLACK";
+  }
+
+  function rouletteEscape(value){
+    return String(value ?? "").replace(/[&<>"]/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","":"&quot;"}[ch]));
+  }
+
+  function rouletteRenderHistory(rows){
+    const list=document.getElementById("rouletteHistoryList");
+    if(!list) return;
+    list.innerHTML="";
+    if(!rows || !rows.length){
+      list.innerHTML='<div class="roulette-empty" style="width:100%;">Пока нет завершённых раундов</div>';
+      return;
+    }
+    rows.slice(0,12).forEach(r=>{
+      const n=Number(r.winning_number);
+      const col=numberColor(n);
+      const item=document.createElement("div");
+      item.className=`roulette-history-item ${col}`;
+      item.innerHTML=`<div class="rh-num" style="color:${col==='red'?'var(--red)':col==='black'?'var(--text)':'var(--roulette-green)'}">${n}</div><div class="rh-round">#${r.round_number}</div>`;
+      item.title=`Раунд #${r.round_number}: ${n}`;
+      list.appendChild(item);
+    });
+  }
+
+  async function rouletteLoadHistory(){
+    if(!supabaseClient) return;
+    try{
+      const {data,error}=await supabaseClient.from("roulette_rounds")
+        .select("id,round_number,winning_number,winning_color,finished_at")
+        .eq("status","finished")
+        .not("winning_number","is",null)
+        .order("id",{ascending:false})
+        .limit(12);
+      if(error) throw error;
+      rouletteRenderHistory(data||[]);
+    }catch(e){
+      console.warn("CoinRush roulette history:",e.message||e);
+    }
+  }
+
+  async function rouletteLoadParticipants(roundId){
+    const list=document.getElementById("rouletteParticipantsList");
+    if(!list || !supabaseClient || !roundId) return;
+    try{
+      const {data: bets,error}=await supabaseClient.from("roulette_bets")
+        .select("id,telegram_id,bet_type,bet_value,amount")
+        .eq("round_id",roundId)
+        .order("id",{ascending:true});
+      if(error) throw error;
+      if(!bets || !bets.length){
+        list.innerHTML='<div class="roulette-empty">Пока никто не поставил</div>';
+        return;
+      }
+      const ids=[...new Set(bets.map(b=>String(b.telegram_id)))];
+      let users=[];
+      try{
+        const {data,error:userError}=await supabaseClient.from("users").select("telegram_id,nickname").in("telegram_id",ids);
+        if(!userError) users=data||[];
+      }catch(_){}
+      const names=new Map(users.map(u=>[String(u.telegram_id),u.nickname||"Player"]));
+      let winningNumber=null;
+      if(rouletteRound && Number(rouletteRound.id)===Number(roundId) && rouletteRound.status==="finished") winningNumber=Number(rouletteRound.winning_number);
+      list.innerHTML="";
+      bets.forEach(b=>{
+        const isWin = winningNumber!==null && ((b.bet_type==="number" && Number(b.bet_value)===winningNumber) || (b.bet_type==="red" && numberColor(winningNumber)==="red") || (b.bet_type==="black" && numberColor(winningNumber)==="black") || (b.bet_type==="green" && winningNumber===0));
+        const payout = isWin ? Number(b.amount) * (b.bet_type==="number" || b.bet_type==="green" ? 36 : 2) : 0;
+        const row=document.createElement("div");
+        const dotCol=(b.bet_type==="red"?"red":(b.bet_type==="black"?"black":"zero"));
+        row.className="roulette-participant";
+        row.innerHTML=`<span class="roulette-participant-dot ${dotCol}"></span><div class="roulette-participant-main"><div class="roulette-participant-name">${rouletteEscape(names.get(String(b.telegram_id))||String(b.telegram_id))}</div><div class="roulette-participant-bet">${rouletteBetLabel(b)}</div></div><div><div class="roulette-participant-amount">${fmt(Number(b.amount))} CR</div>${winningNumber!==null?`<div class="roulette-participant-result ${isWin?'win':'loss'}">${isWin?'+'+fmt(payout)+' CR':'ПРОИГРАЛ'}</div>`:''}</div>`;
+        list.appendChild(row);
+      });
+    }catch(e){
+      console.warn("CoinRush roulette participants:",e.message||e);
+      list.innerHTML='<div class="roulette-empty">Не удалось загрузить участников</div>';
+    }
+  }
+
   function setRouletteOnlineStatus(text, state=""){
     const el=document.getElementById("rouletteOnlineStatus");
     if(!el) return;
@@ -2931,6 +3060,16 @@ if(restoreBtn){
   }
   buildNumberGrid();
 
+  const rouletteNumberToggle=document.getElementById("rouletteNumberToggle");
+  const rouletteNumberPanel=document.getElementById("rouletteNumberPanel");
+  if(rouletteNumberToggle && rouletteNumberPanel){
+    rouletteNumberToggle.addEventListener("click",()=>{
+      clickSound();
+      const open=rouletteNumberPanel.classList.toggle("open");
+      document.getElementById("rouletteNumberToggleArrow").textContent=open?"⌃":"⌄";
+    });
+  }
+
   document.querySelectorAll(".color-bet").forEach(cb=>{
     cb.addEventListener("click", ()=>{
       if(isBetLocked("roulette") || rouletteBetPlaced) return;
@@ -2940,6 +3079,10 @@ if(restoreBtn){
       document.querySelectorAll(".color-bet").forEach(c=>c.classList.remove("selected"));
       document.querySelectorAll(".num-cell").forEach(c=>c.classList.remove("selected"));
       cb.classList.add("selected");
+      const panel=document.getElementById("rouletteNumberPanel");
+      if(panel) panel.classList.remove("open");
+      const arrow=document.getElementById("rouletteNumberToggleArrow");
+      if(arrow) arrow.textContent="⌄";
     });
   });
 
@@ -3020,6 +3163,7 @@ if(restoreBtn){
         }catch(e){
           console.warn("CoinRush roulette bet count:",e.message||e);
         }
+        rouletteLoadParticipants(round.id);
         syncBetLockUI();
         return;
       }
@@ -3034,6 +3178,8 @@ if(restoreBtn){
           rouletteShowServerResult(round);
         }
         setRouletteOnlineStatus(`РАУНД #${round.round_number} • РЕЗУЛЬТАТ: ${round.winning_number} • ЖДЁМ ПЕРВУЮ СТАВКУ`,"live");
+        rouletteLoadParticipants(round.id);
+        rouletteLoadHistory();
         syncBetLockUI();
         // Новый раунд НЕ запускаем автоматически. Его создаст первая ставка.
       }
@@ -3059,6 +3205,7 @@ if(restoreBtn){
       return;
     }
     try{
+      await rouletteLoadHistory();
       await rouletteSyncRound();
       if(roulettePollTimer) clearInterval(roulettePollTimer);
       roulettePollTimer=setInterval(()=>{
@@ -3186,6 +3333,7 @@ if(restoreBtn){
       }
       setRouletteOnlineStatus(`РАУНД #${rouletteRound.round_number} • СТАВКА ПРИНЯТА • ОЖИДАЕМ РЕЗУЛЬТАТ`,"live");
       toast(`🎰 Ставка ${fmt(rouletteBetAmount)} CR принята`);
+      rouletteLoadParticipants(rouletteRound.id);
       // The round now definitely has a bet, so schedule its finish.
       rouletteScheduleFinish(rouletteRound);
       rouletteSpinning=false; // selection is locked by rouletteBetPlaced, but countdown continues
