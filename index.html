@@ -1239,6 +1239,7 @@ function saveBalance(v){
   let stats = loadStats();
   let soundOn = loadSound();
   let playerId = loadOrCreateId();
+  let displayCoinrushId = playerId;
   let xpTotal = loadXP();
   let streak = loadStreak();
   if(!streak.startDate && streak.lastClaimDate){ streak.startDate=streak.lastClaimDate; saveStreak(streak); }
@@ -1384,6 +1385,21 @@ function saveBalance(v){
       });
       if(error) throw error;
       const row=Array.isArray(data)?data[0]:data;
+      // Custom CoinRush ID is controlled only in Supabase. The client can only read it.
+      try{
+        const {data:customRow,error:customError}=await supabaseClient
+          .from("users")
+          .select("custom_coinrush_id")
+          .eq("telegram_id",String(tg.id))
+          .maybeSingle();
+        if(!customError && customRow && customRow.custom_coinrush_id){
+          displayCoinrushId=String(customRow.custom_coinrush_id);
+        }else{
+          displayCoinrushId=playerId;
+        }
+      }catch(e){
+        displayCoinrushId=playerId;
+      }
       if(row){
         if(row.coinrush_id){ playerId=String(row.coinrush_id); localStorage.setItem(ID_KEY,playerId); }
         if(row.nickname){ nickname=String(row.nickname).trim(); localStorage.setItem(NICKNAME_KEY,nickname); }
@@ -1448,18 +1464,18 @@ function saveBalance(v){
 
     ratingLoadPromise=(async ()=>{
       const {data,error}=await supabaseClient.from("users")
-        .select("coinrush_id,nickname,avatar,xp,level,history_data")
+        .select("coinrush_id,custom_coinrush_id,nickname,avatar,xp,level,history_data")
         .order("level",{ascending:false}).limit(300);
       if(error){
         console.warn("CoinRush leaderboard:",error.message);
         // Only use local data when the real global request failed.
         const info=currentLevelInfo(xpTotal);
-        ratingData=[{coinrushId:playerId,nickname:nickname||"Player",level:info.level,todayWin:computeTodayWin(history),self:true}];
+        ratingData=[{coinrushId:displayCoinrushId,nickname:nickname||"Player",level:info.level,todayWin:computeTodayWin(history),self:true}];
         applyRatingTab();
         return;
       }
       ratingData=(data || []).map(u=>({
-        coinrushId:u.coinrush_id||"",
+        coinrushId:u.custom_coinrush_id||u.coinrush_id||"",
         nickname:u.nickname||"Player",
         avatar:u.avatar||"",
         level:Number(u.level)||1,
@@ -1882,7 +1898,7 @@ await saveUser();
 
   function renderProfile(){
     updateStreak();syncAutomaticFrames();
-    document.getElementById("profileId").textContent=playerId;document.getElementById("profileIdFull").textContent=playerId;
+    document.getElementById("profileId").textContent=displayCoinrushId;document.getElementById("profileIdFull").textContent=displayCoinrushId;
     document.getElementById("profileNickname").textContent=nickname||"Player";document.getElementById("historyNickname").textContent=nickname||"Player";
     document.getElementById("statPlayed").textContent=stats.played;document.getElementById("statWins").textContent=stats.wins;document.getElementById("statLosses").textContent=stats.losses;document.getElementById("statBest").textContent=fmt(stats.best)+" CR";
     const info=currentLevelInfo(xpTotal);document.getElementById("profileLevel").textContent=info.level;document.getElementById("profileXpText").textContent=fmt(info.xpIntoLevel)+" / "+fmt(info.xpToNext)+" XP";document.getElementById("xpBarFill").style.width=Math.min(100,info.xpIntoLevel/info.xpToNext*100)+"%";document.getElementById("xpNextText").textContent=fmt(Math.max(0,info.xpToNext-info.xpIntoLevel))+" XP TO LEVEL "+(info.level+1);
@@ -1971,7 +1987,7 @@ await saveUser();
 
     const info=currentLevelInfo(xpTotal);
     ratingData=[{
-      coinrushId: playerId,
+      coinrushId: displayCoinrushId,
       nickname: nickname||"Player",
       level: info.level,
       todayWin: computeTodayWin(history),
@@ -2431,7 +2447,7 @@ if(restoreBtn){
       setTimeout(()=>{ btn.textContent = "COPY ID"; btn.classList.remove("copied"); }, 1500);
     };
     if(navigator.clipboard && navigator.clipboard.writeText){
-      navigator.clipboard.writeText(playerId).then(done).catch(done);
+      navigator.clipboard.writeText(displayCoinrushId).then(done).catch(done);
     } else {
       done();
     }
