@@ -2618,19 +2618,19 @@ if(restoreBtn){
     }
     return el;
   }
-  function bjSetBetUI(){ document.getElementById("bjBetAmount").textContent = fmt(bjBet) + " CR"; }
-  document.getElementById("bjBetMinus").addEventListener("click", ()=>{
+  function bjSetBetUI(){ const el=document.getElementById("bjBetAmount"); if(el) el.textContent = fmt(bjBet) + " CR"; }
+  { const bjBetMinusEl=document.getElementById("bjBetMinus"); if(bjBetMinusEl) bjBetMinusEl.addEventListener("click", ()=>{
     clickSound();
     if(bjInProgress) return;
     bjBet = Math.max(10, bjBet - (bjBet <= 100 ? 10 : 50));
     bjSetBetUI();
-  });
-  document.getElementById("bjBetPlus").addEventListener("click", ()=>{
+  }); }
+  { const bjBetPlusEl=document.getElementById("bjBetPlus"); if(bjBetPlusEl) bjBetPlusEl.addEventListener("click", ()=>{
     clickSound();
     if(bjInProgress) return;
     bjBet = Math.min(balance, bjBet + (bjBet < 100 ? 10 : 50));
     bjSetBetUI();
-  });
+  }); }
 
   function bjReset(){
     bjDeck = []; bjPlayer = []; bjDealer = []; bjRoundBet = 0; bjInProgress = false; bjActionLocked = false; bjSessionId = null;
@@ -2737,15 +2737,16 @@ if(restoreBtn){
      TOWER
      (state variables declared earlier, above openGame — see GAME STATE block)
   ================================================================= */
-  function towerSetBetUI(){ document.getElementById("towerBetAmount").textContent = fmt(towerBet) + " CR"; }
-  document.getElementById("towerBetMinus").addEventListener("click", ()=>{
+  function setDisp(id,val){ const el=document.getElementById(id); if(el) el.style.display=val; }
+  function towerSetBetUI(){ const el=document.getElementById("towerBetAmount"); if(el) el.textContent = fmt(towerBet) + " CR"; }
+  { const towerBetMinusEl=document.getElementById("towerBetMinus"); if(towerBetMinusEl) towerBetMinusEl.addEventListener("click", ()=>{
     clickSound(); if(towerActive) return;
     towerBet = Math.max(10, towerBet - (towerBet<=100?10:50)); towerSetBetUI();
-  });
-  document.getElementById("towerBetPlus").addEventListener("click", ()=>{
+  }); }
+  { const towerBetPlusEl=document.getElementById("towerBetPlus"); if(towerBetPlusEl) towerBetPlusEl.addEventListener("click", ()=>{
     clickSound(); if(towerActive) return;
     towerBet = Math.min(balance, towerBet + (towerBet<100?10:50)); towerSetBetUI();
-  });
+  }); }
 
   function towerReset(){
     towerLevel = 0; towerActive = false; towerSessionId = null;
@@ -2755,7 +2756,7 @@ if(restoreBtn){
     document.getElementById("towerStatus").className = "tower-status";
     document.getElementById("towerStartBtn").style.display = "block";
     document.getElementById("towerCashoutBtn").style.display = "none";
-    document.getElementById("towerBetRow").style.display = "flex";
+    setDisp("towerBetRow","flex");
     towerSetBetUI();
     renderTowerLevels();
   }
@@ -2795,7 +2796,7 @@ if(restoreBtn){
       if(error)throw error; if(!data?.success)throw new Error(data?.message||"Не удалось начать TOWER");
       towerSessionId=Number(data.session_id); towerActive=true; towerLevel=0;
       if(data.balance!=null){balance=saveBalance(Number(data.balance));renderBalance();}
-      document.getElementById("towerStartBtn").style.display="none"; document.getElementById("towerCashoutBtn").style.display="block"; document.getElementById("towerBetRow").style.display="none";
+      document.getElementById("towerStartBtn").style.display="none"; document.getElementById("towerCashoutBtn").style.display="block"; setDisp("towerBetRow","none");
       document.getElementById("towerStatus").textContent=""; document.getElementById("towerStatus").className="tower-status"; renderTowerLevels(); syncBetLockUI();
     }catch(e){toast("❌ "+(e.message||"Не удалось начать TOWER"));}
   });
@@ -2820,7 +2821,7 @@ if(restoreBtn){
         }else{document.getElementById("towerStatus").textContent="БЕЗОПАСНО!";document.getElementById("towerStatus").className="tower-status safe-txt";setTimeout(renderTowerLevels,450);}
       }
       if(data.balance!=null && data.outcome!=="win"){balance=saveBalance(Number(data.balance));renderBalance();}
-      if(!towerActive){document.getElementById("towerStartBtn").style.display="block";document.getElementById("towerCashoutBtn").style.display="none";document.getElementById("towerBetRow").style.display="flex";towerLevel=0;document.getElementById("towerLevelNum").textContent="0";document.getElementById("towerMultiVal").textContent="1.0";renderTowerLevels();}
+      if(!towerActive){document.getElementById("towerStartBtn").style.display="block";document.getElementById("towerCashoutBtn").style.display="none";setDisp("towerBetRow","flex");towerLevel=0;document.getElementById("towerLevelNum").textContent="0";document.getElementById("towerMultiVal").textContent="1.0";renderTowerLevels();}
       syncBetLockUI();
     }catch(err){toast("❌ "+(err.message||"Ошибка TOWER"));renderTowerLevels();}
   }
@@ -2831,7 +2832,7 @@ if(restoreBtn){
       const {data,error}=await supabaseClient.rpc("tower_cashout",{p_telegram_id:String(tg.id),p_session_id:Number(towerSessionId)});
       if(error)throw error; if(!data?.success)throw new Error(data?.message||"Забрать выигрыш не удалось");
       const payout=Number(data.payout||0),net=payout-Number(towerBet||0); balance=saveBalance(Number(data.balance));renderBalance();addHistory("TOWER",net,"🏰");confetti();winSound();toast((maxed?"🏆 Максимальный уровень! ":"🎉 Победа ")+"+"+fmt(net)+" CR");
-      towerActive=false;towerSessionId=null;syncBetLockUI();document.getElementById("towerStartBtn").style.display="block";document.getElementById("towerCashoutBtn").style.display="none";document.getElementById("towerBetRow").style.display="flex";towerLevel=0;document.getElementById("towerLevelNum").textContent="0";document.getElementById("towerMultiVal").textContent="1.0";document.getElementById("towerStatus").textContent="";renderTowerLevels();
+      towerActive=false;towerSessionId=null;syncBetLockUI();document.getElementById("towerStartBtn").style.display="block";document.getElementById("towerCashoutBtn").style.display="none";setDisp("towerBetRow","flex");towerLevel=0;document.getElementById("towerLevelNum").textContent="0";document.getElementById("towerMultiVal").textContent="1.0";document.getElementById("towerStatus").textContent="";renderTowerLevels();
     }catch(e){toast("❌ "+(e.message||"Ошибка TOWER"));}
   }
   document.getElementById("towerCashoutBtn").addEventListener("click",()=>{clickSound();towerCashout(false);});
@@ -3286,15 +3287,15 @@ if(restoreBtn){
      COIN FLIP
      (state variables declared earlier, above openGame — see GAME STATE block)
   ================================================================= */
-  function cfSetBetUI(){ document.getElementById("cfBetAmount").textContent = fmt(cfBet) + " CR"; }
-  document.getElementById("cfBetMinus").addEventListener("click", ()=>{
+  function cfSetBetUI(){ const el=document.getElementById("cfBetAmount"); if(el) el.textContent = fmt(cfBet) + " CR"; }
+  { const cfBetMinusEl=document.getElementById("cfBetMinus"); if(cfBetMinusEl) cfBetMinusEl.addEventListener("click", ()=>{
     clickSound(); if(cfFlipping) return;
     cfBet = Math.max(10, cfBet - (cfBet<=100?10:50)); cfSetBetUI();
-  });
-  document.getElementById("cfBetPlus").addEventListener("click", ()=>{
+  }); }
+  { const cfBetPlusEl=document.getElementById("cfBetPlus"); if(cfBetPlusEl) cfBetPlusEl.addEventListener("click", ()=>{
     clickSound(); if(cfFlipping) return;
     cfBet = Math.min(balance, cfBet + (cfBet<100?10:50)); cfSetBetUI();
-  });
+  }); }
   document.querySelectorAll(".side-choice").forEach(el=>{
     el.addEventListener("click", ()=>{
       if(cfFlipping) return;
