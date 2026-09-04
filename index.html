@@ -3019,7 +3019,7 @@ if(restoreBtn){
         const isWin = winningNumber!==null && ((b.bet_type==="number" && Number(b.bet_value)===winningNumber) || (b.bet_type==="red" && numberColor(winningNumber)==="red") || (b.bet_type==="black" && numberColor(winningNumber)==="black") || (b.bet_type==="green" && winningNumber===0));
         const payout = isWin ? Number(b.amount) * (b.bet_type==="number" || b.bet_type==="green" ? 36 : 2) : 0;
         const row=document.createElement("div");
-        const dotCol=(b.bet_type==="red"?"red":(b.bet_type==="black"?"black":"zero"));
+        const dotCol=(b.bet_type==="red"?"red":(b.bet_type==="black"?"black":(b.bet_type==="number"?numberColor(Number(b.bet_value)):"zero")));
         row.className="roulette-participant";
         row.innerHTML=`<span class="roulette-participant-dot ${dotCol}"></span><div class="roulette-participant-main"><div class="roulette-participant-name">${rouletteEscape(names.get(String(b.telegram_id))||String(b.telegram_id))}</div><div class="roulette-participant-bet">${rouletteBetLabel(b)}</div></div><div><div class="roulette-participant-amount">${fmt(Number(b.amount))} CR</div>${winningNumber!==null?`<div class="roulette-participant-result ${isWin?'win':'loss'}">${isWin?'+'+fmt(payout)+' CR':'ПРОИГРАЛ'}</div>`:''}</div>`;
         list.appendChild(row);
@@ -3483,8 +3483,6 @@ if(restoreBtn){
     const g=b.dataset.betTarget;
     if(g)setBetAmount(g,b.dataset.betValue);else setBetAmount("roulette",b.dataset.chip);
   }));
-  document.getElementById("rouletteBetInput").addEventListener("input",e=>setBetAmount("roulette",e.target.value));
-  document.getElementById("rouletteBetMax").addEventListener("click",()=>{clickSound();setBetAmount("roulette",balance);});
   const originalRenderBalance=renderBalance; renderBalance=function(){originalRenderBalance();refreshQuickBets();syncAllBetInputs();syncBetLockUI();};
   refreshQuickBets();
   syncAllBetInputs();
