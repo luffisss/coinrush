@@ -712,6 +712,21 @@
   .bet-quick{flex-shrink:0;border:1px solid var(--border);background:var(--card-hover);color:var(--text2);border-radius:10px;padding:7px 9px;font-size:10px;font-weight:900;cursor:pointer;}
   .bet-editor .bet-input:disabled,.bet-editor .btn:disabled,.bet-editor .bet-quick:disabled{opacity:.45;cursor:not-allowed;}
   .bet-max-hint{font-size:9px;color:var(--text2);margin-top:6px;}
+
+  /* ===== UNIFIED BET UI ===== */
+  .bet-editor-unified{padding:14px;border-radius:18px;background:var(--card);border:1px solid var(--border);}
+  .bet-editor-unified label{display:block;text-align:center;font-size:11px;color:var(--text2);font-weight:900;margin-bottom:8px;letter-spacing:.9px;}
+  .bet-hints{justify-content:center;margin:0 0 10px;overflow:visible;}
+  .bet-hint{flex:1;min-width:0;text-align:center;padding:10px 8px;border-radius:12px;background:var(--card-hover);border:1px solid var(--border);color:var(--text);font-size:12px;font-weight:900;}
+  .bet-main-row{display:flex;align-items:center;gap:8px;}
+  .bet-input-main{height:52px;box-sizing:border-box;text-align:center;font-size:22px!important;border-radius:15px!important;border:1px solid var(--purple)!important;background:var(--bg2)!important;}
+  .bet-round-btn{width:48px;height:48px;flex:0 0 48px;border-radius:50%;border:1px solid var(--border);background:var(--card-hover);color:var(--text);font-size:17px;font-weight:900;cursor:pointer;}
+  .bet-round-btn:active,.bet-small-btn:active,.bet-hint:active{transform:scale(.94);}
+  .bet-input-actions{display:flex;gap:8px;margin-top:9px;}
+  .bet-small-btn,.bet-max-btn{height:36px;border-radius:11px;}
+  .bet-small-btn{width:40px;border:1px solid var(--border);background:var(--card-hover);color:var(--text);font-size:18px;font-weight:900;}
+  .bet-max-btn{flex:1;}
+  .bet-editor-unified .bet-max-hint{text-align:center;margin-top:7px;}
   .nickname-field,.avatar-upload{width:100%;box-sizing:border-box;background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:14px;padding:13px;outline:none;font-size:14px;}
   .nickname-field:focus{border-color:var(--purple);box-shadow:0 0 0 2px rgba(139,92,246,.15);}
   .file-label{display:flex;align-items:center;justify-content:center;padding:12px;border-radius:14px;border:1px dashed var(--purple-dark);color:var(--purple-light);font-weight:800;font-size:12px;cursor:pointer;}
@@ -874,13 +889,20 @@
         <div class="bj-score" id="playerScore">&nbsp;</div>
       </div>
     </div>
-    <div class="bet-editor" data-bet-game="bj">
-      <label>BET AMOUNT</label>
-      <div class="bet-input-row"><input class="bet-input" id="bjBetInput" inputmode="numeric" autocomplete="off" value="100" aria-label="Bet amount"><button class="btn btn-secondary" type="button" id="bjBetMax">MAX</button></div>
-      <div class="bet-quick-row"><button class="bet-quick" type="button" data-bet-target="bj" data-bet-value="100">100</button><button class="bet-quick" type="button" data-bet-target="bj" data-bet-value="500">500</button><button class="bet-quick" type="button" data-bet-target="bj" data-bet-value="1000">1K</button><button class="bet-quick" type="button" data-bet-target="bj" data-bet-value="5000">5K</button><button class="bet-quick" type="button" data-bet-target="bj" data-bet-value="10000">10K</button></div>
-      <div class="bet-max-hint">MAX = Максимальная ставка</div>
+    <div class="bet-editor bet-editor-unified" data-bet-game="bj">
+      <label>ВАША СТАВКА</label>
+      <div class="bet-quick-row bet-hints" data-bet-hints="bj">
+        <button class="bet-quick bet-hint" type="button" data-bet-target="bj"></button>
+        <button class="bet-quick bet-hint" type="button" data-bet-target="bj"></button>
+        <button class="bet-quick bet-hint" type="button" data-bet-target="bj"></button>
+      </div>
+      <div class="bet-main-row">
+        <button class="bet-round-btn" type="button" data-bet-op="half" data-bet-game="bj" aria-label="Разделить ставку пополам">/2</button>
+        <input class="bet-input bet-input-main" id="bjBetInput" inputmode="numeric" autocomplete="off" value="100" aria-label="Ваша ставка">
+        <button class="bet-round-btn" type="button" data-bet-op="double" data-bet-game="bj" aria-label="Удвоить ставку">×2</button>
+      </div>
+      <div class="bet-max-hint">Подсказки зависят от вашего баланса</div>
     </div>
-    <div class="bet-row" style="display:none;"><button class="bet-stepper-btn" id="bjBetMinus">-</button><div class="bet-amount" id="bjBetAmount">100 CR</div><button class="bet-stepper-btn" id="bjBetPlus">+</button></div>
     <div class="action-row" id="bjDealRow">
       <button class="btn btn-primary" id="bjDealBtn" style="flex:1;">РАЗДАТЬ</button>
     </div>
@@ -904,13 +926,20 @@
       </div>
       <div class="tower-status" id="towerStatus"></div>
       <div class="tower-levels" id="towerLevels"></div>
-      <div class="bet-editor" data-bet-game="tower">
-        <label>BET AMOUNT</label>
-        <div class="bet-input-row"><input class="bet-input" id="towerBetInput" inputmode="numeric" autocomplete="off" value="100" aria-label="Tower bet amount"><button class="btn btn-secondary" type="button" id="towerBetMax">MAX</button></div>
-        <div class="bet-quick-row"><button class="bet-quick" type="button" data-bet-target="tower" data-bet-value="100">100</button><button class="bet-quick" type="button" data-bet-target="tower" data-bet-value="500">500</button><button class="bet-quick" type="button" data-bet-target="tower" data-bet-value="1000">1K</button><button class="bet-quick" type="button" data-bet-target="tower" data-bet-value="5000">5K</button><button class="bet-quick" type="button" data-bet-target="tower" data-bet-value="10000">10K</button></div>
-        <div class="bet-max-hint">MAX = Максимальная ставка.</div>
+      <div class="bet-editor bet-editor-unified" data-bet-game="tower">
+      <label>ВАША СТАВКА</label>
+      <div class="bet-quick-row bet-hints" data-bet-hints="tower">
+        <button class="bet-quick bet-hint" type="button" data-bet-target="tower"></button>
+        <button class="bet-quick bet-hint" type="button" data-bet-target="tower"></button>
+        <button class="bet-quick bet-hint" type="button" data-bet-target="tower"></button>
       </div>
-      <div class="bet-row" id="towerBetRow" style="display:none;"><button class="bet-stepper-btn" id="towerBetMinus">-</button><div class="bet-amount" id="towerBetAmount">100 CR</div><button class="bet-stepper-btn" id="towerBetPlus">+</button></div>
+      <div class="bet-main-row">
+        <button class="bet-round-btn" type="button" data-bet-op="half" data-bet-game="tower" aria-label="Разделить ставку пополам">/2</button>
+        <input class="bet-input bet-input-main" id="towerBetInput" inputmode="numeric" autocomplete="off" value="100" aria-label="Ваша ставка">
+        <button class="bet-round-btn" type="button" data-bet-op="double" data-bet-game="tower" aria-label="Удвоить ставку">×2</button>
+      </div>
+      <div class="bet-max-hint">Подсказки зависят от вашего баланса</div>
+    </div>
       <div class="action-row">
         <button class="btn btn-primary" id="towerStartBtn" style="flex:1;">НАЧАТЬ</button>
         <button class="btn btn-primary" id="towerCashoutBtn" style="flex:1; display:none;">ЗАБРАТЬ</button>
@@ -954,13 +983,20 @@
       <div class="number-grid" id="numberGrid"></div>
     </div>
 
-    <div class="bet-editor" data-bet-game="roulette">
-      <label>BET AMOUNT</label>
-      <div class="bet-input-row"><input class="bet-input" id="rouletteBetInput" inputmode="numeric" autocomplete="off" value="50" aria-label="Roulette bet amount"><button class="btn btn-secondary" type="button" id="rouletteBetMax">MAX</button></div>
-      <div class="bet-quick-row" id="chipRow"><button class="bet-quick" type="button" data-chip="100">100</button><button class="bet-quick" type="button" data-chip="500">500</button><button class="bet-quick" type="button" data-chip="1000">1K</button><button class="bet-quick" type="button" data-chip="5000">5K</button><button class="bet-quick" type="button" data-chip="10000">10K</button></div>
-      <div class="bet-max-hint">MAX = Максимальная ставка.</div>
-    </div>
-    <button class="btn btn-primary" id="spinBtn" style="width:100%; margin-top:10px;">ПОСТАВИТЬ</button>
+    <div class="bet-editor bet-editor-unified" data-bet-game="roulette">
+      <label>ВАША СТАВКА</label>
+      <div class="bet-quick-row bet-hints" data-bet-hints="roulette">
+        <button class="bet-quick bet-hint" type="button" data-bet-target="roulette"></button>
+        <button class="bet-quick bet-hint" type="button" data-bet-target="roulette"></button>
+        <button class="bet-quick bet-hint" type="button" data-bet-target="roulette"></button>
+      </div>
+      <div class="bet-main-row">
+        <button class="bet-round-btn" type="button" data-bet-op="half" data-bet-game="roulette" aria-label="Разделить ставку пополам">/2</button>
+        <input class="bet-input bet-input-main" id="rouletteBetInput" inputmode="numeric" autocomplete="off" value="100" aria-label="Ваша ставка">
+        <button class="bet-round-btn" type="button" data-bet-op="double" data-bet-game="roulette" aria-label="Удвоить ставку">×2</button>
+      </div>
+      <div class="bet-max-hint">Подсказки зависят от вашего баланса</div>
+    </div><button class="btn btn-primary" id="spinBtn" style="width:100%; margin-top:10px;">ПОСТАВИТЬ</button>
 
     <div class="roulette-participants">
       <div class="roulette-participants-title">УЧАСТНИКИ РАУНДА</div>
@@ -988,13 +1024,20 @@
       <div class="side-choice selected" data-side="heads">🪙 ОРЁЛ</div>
       <div class="side-choice" data-side="tails">🪙 РЕШКА</div>
     </div>
-    <div class="bet-editor" data-bet-game="cf">
-      <label>BET AMOUNT</label>
-      <div class="bet-input-row"><input class="bet-input" id="cfBetInput" inputmode="numeric" autocomplete="off" value="100" aria-label="Bet amount"><button class="btn btn-secondary" type="button" id="cfBetMax">MAX</button></div>
-      <div class="bet-quick-row"><button class="bet-quick" type="button" data-bet-target="cf" data-bet-value="100">100</button><button class="bet-quick" type="button" data-bet-target="cf" data-bet-value="500">500</button><button class="bet-quick" type="button" data-bet-target="cf" data-bet-value="1000">1K</button><button class="bet-quick" type="button" data-bet-target="cf" data-bet-value="5000">5K</button><button class="bet-quick" type="button" data-bet-target="cf" data-bet-value="10000">10K</button></div>
-      <div class="bet-max-hint">MAX = Максимальная ставка.</div>
+    <div class="bet-editor bet-editor-unified" data-bet-game="cf">
+      <label>ВАША СТАВКА</label>
+      <div class="bet-quick-row bet-hints" data-bet-hints="cf">
+        <button class="bet-quick bet-hint" type="button" data-bet-target="cf"></button>
+        <button class="bet-quick bet-hint" type="button" data-bet-target="cf"></button>
+        <button class="bet-quick bet-hint" type="button" data-bet-target="cf"></button>
+      </div>
+      <div class="bet-main-row">
+        <button class="bet-round-btn" type="button" data-bet-op="half" data-bet-game="cf" aria-label="Разделить ставку пополам">/2</button>
+        <input class="bet-input bet-input-main" id="cfBetInput" inputmode="numeric" autocomplete="off" value="100" aria-label="Ваша ставка">
+        <button class="bet-round-btn" type="button" data-bet-op="double" data-bet-game="cf" aria-label="Удвоить ставку">×2</button>
+      </div>
+      <div class="bet-max-hint">Подсказки зависят от вашего баланса</div>
     </div>
-    <div class="bet-row" style="display:none;"><button class="bet-stepper-btn" id="cfBetMinus">-</button><div class="bet-amount" id="cfBetAmount">100 CR</div><button class="bet-stepper-btn" id="cfBetPlus">+</button></div>
     <button class="btn btn-primary" id="cfFlipBtn" style="width:100%;">FLIP COIN</button>
   </div>
 
@@ -1175,11 +1218,12 @@
           <span>Формат баланса</span>
           <div class="balance-format-switch" id="balanceFormatBtn" role="group" aria-label="Формат баланса">
             <button class="balance-format-seg balance-format-off" data-balance-format="off" type="button">OFF</button>
+            <button class="balance-format-seg balance-format-name" data-balance-format="million" type="button">МЛН</button>
             <button class="balance-format-seg balance-format-short" data-balance-format="kk" type="button">КК</button>
           </div>
         </div>
       </div>
-      <div class="menu-row">Версия <span style="color:var(--text2);">CoinRush 0.0.9 beta</span></div>
+      <div class="menu-row">Версия <span style="color:var(--text2);">CoinRush 2.0</span></div>
     </div>
   </div>
 
@@ -2110,10 +2154,10 @@ await saveUser();
   ================================================================= */
   const SUITS = ["♠","♥","♦","♣"];
   const RANKS = ["2","3","4","5","6","7","8","9","10","J","Q","K","A"];
-  let bjDeck = [], bjPlayer = [], bjDealer = [], bjBet = 100, bjRoundBet = 0, bjInProgress = false, bjActionLocked = false;
+  let bjDeck = [], bjPlayer = [], bjDealer = [], bjBet = 100, bjRoundBet = 0, bjInProgress = false, bjActionLocked = false, bjSessionId = null;
 
   const TOWER_MULTIPLIERS = [1.2,1.5,1.9,2.4,3.0,3.8,4.8,6,7.5,10];
-  let towerBet = 100, towerLevel = 0, towerActive = false, towerBombIndex = [];
+  let towerBet = 100, towerLevel = 0, towerActive = false, towerBombIndex = [], towerSessionId = null;
 
   const RED_NUMBERS = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
   // Classic European (single-zero) roulette wheel sequence — 37 pockets, 0-36.
@@ -2589,7 +2633,7 @@ if(restoreBtn){
   });
 
   function bjReset(){
-    bjDeck = []; bjPlayer = []; bjDealer = []; bjRoundBet = 0; bjInProgress = false; bjActionLocked = false;
+    bjDeck = []; bjPlayer = []; bjDealer = []; bjRoundBet = 0; bjInProgress = false; bjActionLocked = false; bjSessionId = null;
     document.getElementById("dealerHand").innerHTML = "";
     document.getElementById("playerHand").innerHTML = "";
     document.getElementById("dealerScore").innerHTML = "&nbsp;";
@@ -2633,137 +2677,61 @@ if(restoreBtn){
     });
   }
 
+  function renderServerBlackjackState(data){
+    bjPlayer = Array.isArray(data?.player) ? data.player : [];
+    bjDealer = Array.isArray(data?.dealer) ? data.dealer : [];
+    const playerEl=document.getElementById("playerHand"), dealerEl=document.getElementById("dealerHand");
+    playerEl.innerHTML=""; dealerEl.innerHTML="";
+    bjPlayer.forEach(c=>playerEl.appendChild(renderCardEl(c,false)));
+    bjDealer.forEach((c,i)=>dealerEl.appendChild(renderCardEl(c, data?.status==="active" && i===1)));
+    document.getElementById("playerScore").textContent=data?.player_score!=null?"Очки: "+data.player_score:"\u00a0";
+    document.getElementById("dealerScore").textContent=data?.dealer_score!=null?"Очки: "+data.dealer_score:(data?.status==="active"?"Очки: ?":"\u00a0");
+  }
+
+  function finishBlackjackClient(data){
+    const payout=Number(data?.payout||0), bet=Number(data?.bet||bjRoundBet||bjBet||0), net=payout-bet;
+    const outcome=data?.outcome||data?.status||"lose";
+    const resEl=document.getElementById("bjResult"); resEl.className="bj-result";
+    if(outcome==="blackjack"){resEl.textContent="BLACKJACK!";resEl.classList.add("win");confetti();winSound();}
+    else if(outcome==="win"){resEl.textContent="ПОБЕДА!";resEl.classList.add("win");winSound();}
+    else if(outcome==="push"){resEl.textContent="PUSH";resEl.classList.add("push");}
+    else{resEl.textContent=outcome==="bust"?"ПЕРЕБОР":"ПОРАЖЕНИЕ";resEl.classList.add("lose");loseSound();document.querySelector(".bj-table").classList.add("shake");setTimeout(()=>document.querySelector(".bj-table").classList.remove("shake"),400);}
+    if(data?.balance!=null){const old=balance;balance=saveBalance(Number(data.balance));renderBalance();bumpBalance(balance-old);}
+    addHistory("BLACKJACK",net,"🂡");
+    bjInProgress=false; bjActionLocked=false; bjSessionId=null; bjRoundBet=0;
+    document.getElementById("bjPlayRow").style.display="none"; document.getElementById("bjDealRow").style.display="flex"; bjUpdateControls(); bjSetBetUI();
+  }
+
   document.getElementById("bjDealBtn").addEventListener("click", async ()=>{
     clickSound();
-    if(bjInProgress || bjActionLocked) return;
-    bjBet=validateBet(bjBet); if(bjBet <= 0 || bjBet > balance){ toast("Не хватает CR-Coin"); return; }
-    bjRoundBet = bjBet;
-    bjActionLocked = true;
-    bjInProgress = true;
-    bjUpdateControls();
+    if(bjInProgress||bjActionLocked)return;
+    bjBet=validateBet(bjBet); if(bjBet<=0||bjBet>balance){toast("Не хватает CR-Coin");return;}
+    const tg=getTelegramUser(); if(!tg||!supabaseClient){toast("BLACKJACK доступен только онлайн");return;}
+    bjRoundBet=bjBet; bjActionLocked=true; bjInProgress=true; bjUpdateControls();
     try{
-      changeBalance(-bjBet);
-      bjDeck = freshDeck();
-      bjPlayer = []; bjDealer = [];
-      document.getElementById("dealerHand").innerHTML = "";
-      document.getElementById("playerHand").innerHTML = "";
-      document.getElementById("bjResult").textContent = "";
-      document.getElementById("bjResult").className = "bj-result";
-      document.getElementById("dealerScore").innerHTML = "&nbsp;";
-      document.getElementById("playerScore").innerHTML = "&nbsp;";
-      document.getElementById("bjDealRow").style.display = "none";
-      document.getElementById("bjPlayRow").style.display = "flex";
-
-      await bjDealCardTo(bjPlayer, "playerHand", false, 0);
-      await bjDealCardTo(bjDealer, "dealerHand", false, 150);
-      await bjDealCardTo(bjPlayer, "playerHand", false, 150);
-      await bjDealCardTo(bjDealer, "dealerHand", true, 150);
-
-      document.getElementById("playerScore").textContent = "Очки: " + handScore(bjPlayer);
-      document.getElementById("dealerScore").textContent = "Очки: ?";
-
-      if(handScore(bjPlayer) === 21){
-        await bjRevealDealer();
-        bjFinish("blackjack");
-      }
-    } finally {
-      bjActionLocked = false;
-      bjUpdateControls();
-    }
+      const {data,error}=await supabaseClient.rpc("blackjack_start",{p_telegram_id:String(tg.id),p_bet:Number(bjBet)});
+      if(error)throw error; if(!data?.success)throw new Error(data?.message||"Не удалось начать BLACKJACK");
+      bjSessionId=Number(data.session_id); renderServerBlackjackState(data);
+      document.getElementById("bjResult").textContent=""; document.getElementById("bjResult").className="bj-result";
+      document.getElementById("bjDealRow").style.display="none"; document.getElementById("bjPlayRow").style.display=data.status==="active"?"flex":"none";
+      if(data.status!=="active")finishBlackjackClient(data);
+    }catch(e){bjInProgress=false;bjActionLocked=false;bjSessionId=null;bjUpdateControls();toast("❌ "+(e.message||"Не удалось начать BLACKJACK"));}
+    finally{bjActionLocked=false;bjUpdateControls();}
   });
 
-  document.getElementById("bjHitBtn").addEventListener("click", async ()=>{
-    clickSound();
-    if(!bjInProgress || bjActionLocked) return;
-    bjActionLocked = true;
-    bjUpdateControls();
+  async function blackjackServerAction(action){
+    if(!bjInProgress||bjActionLocked||!bjSessionId)return;
+    const tg=getTelegramUser(); if(!tg||!supabaseClient)return;
+    bjActionLocked=true; bjUpdateControls();
     try{
-      await bjDealCardTo(bjPlayer, "playerHand", false, 0);
-      const sc = handScore(bjPlayer);
-      document.getElementById("playerScore").textContent = "Очки: " + sc;
-      if(sc > 21){
-        await bjRevealDealer();
-        bjFinish("bust");
-      }
-    } finally {
-      bjActionLocked = false;
-      bjUpdateControls();
-    }
-  });
-
-  document.getElementById("bjStandBtn").addEventListener("click", async ()=>{
-    clickSound();
-    if(!bjInProgress || bjActionLocked) return;
-    bjActionLocked = true;
-    bjUpdateControls();
-    try{
-      await bjRevealDealer();
-      while(handScore(bjDealer) < 17){
-        await bjDealCardTo(bjDealer, "dealerHand", false, 500);
-        document.getElementById("dealerScore").textContent = "Очки: " + handScore(bjDealer);
-      }
-      bjFinish("compare");
-    } finally {
-      bjActionLocked = false;
-      bjUpdateControls();
-    }
-  });
-
-  async function bjRevealDealer(){
-    const hiddenEl = document.querySelector("#dealerHand .hidden-card");
-    if(hiddenEl){
-      flipSound();
-      hiddenEl.classList.add("flipping");
-      await new Promise(r=>setTimeout(r, 260));
-      hiddenEl.classList.remove("hidden-card");
-      const card = bjDealer[1];
-      hiddenEl.innerHTML = `<div>${card.r}<br>${card.s}</div><div class="c-center">${card.s}</div><div style="align-self:flex-end;">${card.r}<br>${card.s}</div>`;
-      if(isRed(card)) hiddenEl.classList.add("red");
-      await new Promise(r=>setTimeout(r, 260));
-    }
-    document.getElementById("dealerScore").textContent = "Очки: " + handScore(bjDealer);
+      const {data,error}=await supabaseClient.rpc("blackjack_action",{p_telegram_id:String(tg.id),p_session_id:Number(bjSessionId),p_action:action});
+      if(error)throw error; if(!data?.success)throw new Error(data?.message||"Действие отклонено");
+      renderServerBlackjackState(data); if(data.status!=="active")finishBlackjackClient(data);
+    }catch(e){toast("❌ "+(e.message||"Ошибка BLACKJACK"));}
+    finally{bjActionLocked=false;bjUpdateControls();}
   }
-
-  function bjFinish(reason){
-    bjInProgress = false;
-    const pScore = handScore(bjPlayer);
-    const dScore = handScore(bjDealer);
-    const roundBet = bjRoundBet || bjBet;
-    const resEl = document.getElementById("bjResult");
-    let winAmount = 0, outcome = "";
-
-    if(reason === "bust"){
-      resEl.textContent = "ПЕРЕБОР"; resEl.classList.add("lose"); outcome = "lose"; loseSound();
-    } else if(reason === "blackjack"){
-      if(dScore === 21 && bjDealer.length === 2){
-        resEl.textContent = "PUSH"; resEl.classList.add("push"); outcome="push"; winAmount = roundBet;
-      } else {
-        resEl.textContent = "BLACKJACK!"; resEl.classList.add("win"); outcome="win"; winAmount = Math.round(roundBet * 2.5);
-        confetti(); winSound();
-      }
-    } else {
-      if(dScore > 21 || pScore > dScore){
-        resEl.textContent = "ПОБЕДА!"; resEl.classList.add("win"); outcome="win"; winAmount = roundBet * 2; winSound();
-      } else if(pScore === dScore){
-        resEl.textContent = "PUSH"; resEl.classList.add("push"); outcome="push"; winAmount = roundBet;
-      } else {
-        resEl.textContent = "ПОРАЖЕНИЕ"; resEl.classList.add("lose"); outcome="lose"; loseSound();
-      }
-    }
-
-    if(winAmount > 0){ changeBalance(winAmount); }
-    const net = winAmount - roundBet;
-    addHistory("BLACKJACK", net, "🂡");
-    if(outcome === "lose"){
-      document.querySelector(".bj-table").classList.add("shake");
-      setTimeout(()=>document.querySelector(".bj-table").classList.remove("shake"), 400);
-    }
-    document.getElementById("bjPlayRow").style.display = "none";
-    document.getElementById("bjDealRow").style.display = "flex";
-    bjRoundBet = 0;
-    bjUpdateControls();
-    setTimeout(()=>{ bjSetBetUI(); }, 100);
-  }
+  document.getElementById("bjHitBtn").addEventListener("click",()=>{clickSound();blackjackServerAction("hit");});
+  document.getElementById("bjStandBtn").addEventListener("click",()=>{clickSound();blackjackServerAction("stand");});
 
   /* ================================================================
      TOWER
@@ -2780,7 +2748,7 @@ if(restoreBtn){
   });
 
   function towerReset(){
-    towerLevel = 0; towerActive = false;
+    towerLevel = 0; towerActive = false; towerSessionId = null;
     document.getElementById("towerLevelNum").textContent = "0";
     document.getElementById("towerMultiVal").textContent = "1.0";
     document.getElementById("towerStatus").textContent = "";
@@ -2819,88 +2787,54 @@ if(restoreBtn){
     }
   }
 
-  document.getElementById("towerStartBtn").addEventListener("click", ()=>{
-    clickSound();
-    towerBet=validateBet(towerBet); if(towerBet <= 0 || towerBet > balance){ toast("BET недоступен"); return; }
-    changeBalance(-towerBet);
-    towerActive = true; towerLevel = 0;
-    syncBetLockUI();
-    towerBombIndex = Array.from({length:10}, ()=>Math.floor(Math.random()*3));
-    document.getElementById("towerStartBtn").style.display = "none";
-    document.getElementById("towerCashoutBtn").style.display = "block";
-    document.getElementById("towerBetRow").style.display = "none";
-    document.getElementById("towerStatus").textContent = "";
-    document.getElementById("towerStatus").className = "tower-status";
-    renderTowerLevels();
+  document.getElementById("towerStartBtn").addEventListener("click", async ()=>{
+    clickSound(); towerBet=validateBet(towerBet); if(towerBet<=0||towerBet>balance){toast("BET недоступен");return;}
+    const tg=getTelegramUser(); if(!tg||!supabaseClient){toast("TOWER доступен только онлайн");return;}
+    try{
+      const {data,error}=await supabaseClient.rpc("tower_start",{p_telegram_id:String(tg.id),p_bet:Number(towerBet)});
+      if(error)throw error; if(!data?.success)throw new Error(data?.message||"Не удалось начать TOWER");
+      towerSessionId=Number(data.session_id); towerActive=true; towerLevel=0;
+      if(data.balance!=null){balance=saveBalance(Number(data.balance));renderBalance();}
+      document.getElementById("towerStartBtn").style.display="none"; document.getElementById("towerCashoutBtn").style.display="block"; document.getElementById("towerBetRow").style.display="none";
+      document.getElementById("towerStatus").textContent=""; document.getElementById("towerStatus").className="tower-status"; renderTowerLevels(); syncBetLockUI();
+    }catch(e){toast("❌ "+(e.message||"Не удалось начать TOWER"));}
   });
 
-  function onTowerCellClick(e){
-    if(!towerActive) return;
-    const idx = parseInt(e.currentTarget.dataset.idx, 10);
-    const bombIdx = towerBombIndex[towerLevel];
-    const rowCells = document.querySelectorAll(`#tower-row-${towerLevel+1} .tower-cell`);
-    rowCells.forEach(c=>c.removeEventListener("click", onTowerCellClick));
-
-    if(idx === bombIdx){
-      e.currentTarget.classList.add("bomb");
-      e.currentTarget.textContent = "💣";
-      rowCells.forEach((c,i)=>{ if(i===bombIdx){} });
-      loseSound();
-      document.querySelector(".tower-wrap").classList.add("shake");
-      setTimeout(()=>document.querySelector(".tower-wrap").classList.remove("shake"), 400);
-      document.getElementById("towerStatus").textContent = "💥 BOOM!";
-      document.getElementById("towerStatus").className = "tower-status boom-txt";
-      towerActive = false;
-      syncBetLockUI();
-      addHistory("TOWER", -towerBet, "🏰");
-      toast("💥 BOOM! Вы попали на бомбу");
-      setTimeout(()=>{
-        document.getElementById("towerStartBtn").style.display = "block";
-        document.getElementById("towerCashoutBtn").style.display = "none";
-        document.getElementById("towerBetRow").style.display = "flex";
-        towerLevel = 0;
-        document.getElementById("towerLevelNum").textContent = "0";
-        document.getElementById("towerMultiVal").textContent = "1.0";
-        renderTowerLevels();
-      }, 1400);
-    } else {
-      e.currentTarget.classList.add("safe");
-      e.currentTarget.textContent = "✓";
-      cardSound();
-      towerLevel += 1;
-      document.getElementById("towerLevelNum").textContent = towerLevel;
-      document.getElementById("towerMultiVal").textContent = TOWER_MULTIPLIERS[towerLevel-1];
-      document.getElementById("towerStatus").textContent = "БЕЗОПАСНО!";
-      document.getElementById("towerStatus").className = "tower-status safe-txt";
-      if(towerLevel >= 10){
-        setTimeout(()=>towerCashout(true), 500);
-      } else {
-        setTimeout(renderTowerLevels, 450);
+  async function onTowerCellClick(e){
+    if(!towerActive||!towerSessionId)return;
+    const idx=parseInt(e.currentTarget.dataset.idx,10), tg=getTelegramUser(); if(!tg||!supabaseClient)return;
+    const rowCells=document.querySelectorAll(`#tower-row-${towerLevel+1} .tower-cell`); rowCells.forEach(c=>c.removeEventListener("click",onTowerCellClick));
+    try{
+      const {data,error}=await supabaseClient.rpc("tower_pick",{p_telegram_id:String(tg.id),p_session_id:Number(towerSessionId),p_index:idx});
+      if(error)throw error; if(!data?.success)throw new Error(data?.message||"Ход отклонён");
+      if(data.outcome==="lose"){
+        e.currentTarget.classList.add("bomb"); e.currentTarget.textContent="💣"; loseSound(); document.querySelector(".tower-wrap").classList.add("shake"); setTimeout(()=>document.querySelector(".tower-wrap").classList.remove("shake"),400);
+        document.getElementById("towerStatus").textContent="💥 BOOM!"; document.getElementById("towerStatus").className="tower-status boom-txt";
+        addHistory("TOWER",-Number(towerBet||0),"🏰"); towerActive=false; towerSessionId=null;
+      }else{
+        e.currentTarget.classList.add("safe"); e.currentTarget.textContent="✓"; cardSound(); towerLevel=Number(data.level||0);
+        document.getElementById("towerLevelNum").textContent=towerLevel; document.getElementById("towerMultiVal").textContent=data.multiplier ?? TOWER_MULTIPLIERS[Math.max(0,towerLevel-1)];
+        if(data.outcome==="win"){
+          const payout=Number(data.payout||0),net=payout-Number(towerBet||0); if(data.balance!=null){balance=saveBalance(Number(data.balance));renderBalance();}
+          addHistory("TOWER",net,"🏰"); confetti();winSound();toast("🏆 Максимальный уровень! +"+fmt(net)+" CR"); towerActive=false;towerSessionId=null;
+        }else{document.getElementById("towerStatus").textContent="БЕЗОПАСНО!";document.getElementById("towerStatus").className="tower-status safe-txt";setTimeout(renderTowerLevels,450);}
       }
-    }
+      if(data.balance!=null && data.outcome!=="win"){balance=saveBalance(Number(data.balance));renderBalance();}
+      if(!towerActive){document.getElementById("towerStartBtn").style.display="block";document.getElementById("towerCashoutBtn").style.display="none";document.getElementById("towerBetRow").style.display="flex";towerLevel=0;document.getElementById("towerLevelNum").textContent="0";document.getElementById("towerMultiVal").textContent="1.0";renderTowerLevels();}
+      syncBetLockUI();
+    }catch(err){toast("❌ "+(err.message||"Ошибка TOWER"));renderTowerLevels();}
   }
 
-  function towerCashout(maxed){
-    if(!towerActive) return;
-    towerActive = false;
-    syncBetLockUI();
-    const mult = towerLevel > 0 ? TOWER_MULTIPLIERS[towerLevel-1] : 1;
-    const winAmount = Math.round(towerBet * mult);
-    changeBalance(winAmount);
-    const net = winAmount - towerBet;
-    addHistory("TOWER", net, "🏰");
-    confetti(); winSound();
-    toast((maxed ? "🏆 Максимальный уровень! " : "🎉 Победа ") + "+" + fmt(net) + " CR");
-    document.getElementById("towerStartBtn").style.display = "block";
-    document.getElementById("towerCashoutBtn").style.display = "none";
-    document.getElementById("towerBetRow").style.display = "flex";
-    towerLevel = 0;
-    document.getElementById("towerLevelNum").textContent = "0";
-    document.getElementById("towerMultiVal").textContent = "1.0";
-    document.getElementById("towerStatus").textContent = "";
-    renderTowerLevels();
+  async function towerCashout(maxed){
+    if(!towerActive||!towerSessionId)return; const tg=getTelegramUser(); if(!tg||!supabaseClient)return;
+    try{
+      const {data,error}=await supabaseClient.rpc("tower_cashout",{p_telegram_id:String(tg.id),p_session_id:Number(towerSessionId)});
+      if(error)throw error; if(!data?.success)throw new Error(data?.message||"Забрать выигрыш не удалось");
+      const payout=Number(data.payout||0),net=payout-Number(towerBet||0); balance=saveBalance(Number(data.balance));renderBalance();addHistory("TOWER",net,"🏰");confetti();winSound();toast((maxed?"🏆 Максимальный уровень! ":"🎉 Победа ")+"+"+fmt(net)+" CR");
+      towerActive=false;towerSessionId=null;syncBetLockUI();document.getElementById("towerStartBtn").style.display="block";document.getElementById("towerCashoutBtn").style.display="none";document.getElementById("towerBetRow").style.display="flex";towerLevel=0;document.getElementById("towerLevelNum").textContent="0";document.getElementById("towerMultiVal").textContent="1.0";document.getElementById("towerStatus").textContent="";renderTowerLevels();
+    }catch(e){toast("❌ "+(e.message||"Ошибка TOWER"));}
   }
-  document.getElementById("towerCashoutBtn").addEventListener("click", ()=>{ clickSound(); towerCashout(false); });
+  document.getElementById("towerCashoutBtn").addEventListener("click",()=>{clickSound();towerCashout(false);});
 
   /* ================================================================
      ROULETTE
@@ -3379,47 +3313,25 @@ if(restoreBtn){
 
   // flipCoin(): true 50/50 random result, decoupled from the visual animation,
   // which is reverse-solved (extra half-turns) so it always lands on the real result.
-  function flipCoin(){
-    if(cfFlipping) return;
-    cfBet=validateBet(cfBet); if(cfBet <= 0 || cfBet > balance){ toast("BET недоступен"); return; }
-    clickSound();
-    cfFlipping = true;
-    syncBetLockUI();
-    changeBalance(-cfBet);
-    document.getElementById("coinflipResult").innerHTML = "";
-    tone(220, 0.15, "triangle", 0.12); // toss
-
-    let ticks = 0;
-    const tickTimer = setInterval(()=>{
-      tone(300 + Math.random()*120, 0.04, "square", 0.03);
-      ticks++;
-      if(ticks > 16) clearInterval(tickTimer);
-    }, 140);
-
-    const result = Math.random() < 0.5 ? "heads" : "tails";
-    let k = 8 + Math.floor(Math.random()*5);
-    const projectedParity = (cfHalfTurns + k) % 2;
-    const desiredParity = result === "tails" ? 1 : 0;
-    if(projectedParity !== desiredParity) k += 1;
-    cfHalfTurns += k;
-    document.getElementById("coin3d").style.transform = `rotateY(${cfHalfTurns*180}deg)`;
-
-    setTimeout(()=>{
-      clearInterval(tickTimer);
-      tone(150, 0.2, "sine", 0.15); // landing thud
-      const win = (result === cfSide);
-      const amt = win ? cfBet * 2 : 0;
-      const net = win ? (amt - cfBet) : -cfBet;
-      const sideLabel = result === "heads" ? "🪙 ОРЁЛ" : "🪙 РЕШКА";
-      const resEl = document.getElementById("coinflipResult");
-      resEl.innerHTML = `<div class="cf-label">RESULT</div><div class="cf-side">${sideLabel}</div><div class="cf-amt ${win?'win':'loss'}">${win ? ("WIN +"+fmt(net)+" CR") : ("LOSS -"+fmt(cfBet)+" CR")}</div>`;
-      if(win){ changeBalance(amt); confetti(); winSound(); toast("🎉 " + sideLabel + " — WIN +" + fmt(net) + " CR"); }
-      else { loseSound(); toast("💥 " + sideLabel + " — LOSE -" + fmt(cfBet) + " CR"); }
-      addHistory("COIN FLIP", net, "🪙");
-      document.getElementById("cfBalanceText").textContent = fmt(balance) + " CR";
-      cfFlipping = false;
-      syncBetLockUI();
-    }, 2650);
+  async function flipCoin(){
+    if(cfFlipping)return;
+    cfBet=validateBet(cfBet); if(cfBet<=0||cfBet>balance){toast("BET недоступен");return;}
+    const tg=getTelegramUser(); if(!tg||!supabaseClient){toast("COIN FLIP доступен только онлайн");return;}
+    clickSound(); cfFlipping=true; syncBetLockUI(); document.getElementById("coinflipResult").innerHTML="";
+    try{
+      const {data,error}=await supabaseClient.rpc("coinflip_play",{p_telegram_id:String(tg.id),p_bet:Number(cfBet),p_side:cfSide});
+      if(error)throw error; if(!data?.success)throw new Error(data?.message||"Ставка отклонена");
+      const result=data.result, desiredParity=result==="tails"?1:0; let k=10; if(((cfHalfTurns+k)%2)!==desiredParity)k++; cfHalfTurns+=k;
+      document.getElementById("coin3d").style.transform=`rotateY(${cfHalfTurns*180}deg)`; tone(220,0.15,"triangle",0.12);
+      let ticks=0; const tickTimer=setInterval(()=>{tone(300+Math.random()*120,0.04,"square",0.03);ticks++;if(ticks>16)clearInterval(tickTimer);},140);
+      setTimeout(()=>{
+        clearInterval(tickTimer);tone(150,0.2,"sine",0.15);const win=data.outcome==="win",net=Number(data.net||0),sideLabel=result==="heads"?"🪙 ОРЁЛ":"🪙 РЕШКА";
+        const resEl=document.getElementById("coinflipResult");resEl.innerHTML=`<div class="cf-label">RESULT</div><div class="cf-side">${sideLabel}</div><div class="cf-amt ${win?'win':'loss'}">${win?"WIN +"+fmt(net)+" CR":"LOSS -"+fmt(cfBet)+" CR"}</div>`;
+        if(data.balance!=null){const old=balance;balance=saveBalance(Number(data.balance));renderBalance();bumpBalance(balance-old);}
+        if(win){confetti();winSound();toast("🎉 "+sideLabel+" — WIN +"+fmt(net)+" CR");}else{loseSound();toast("💥 "+sideLabel+" — LOSE -"+fmt(cfBet)+" CR");}
+        addHistory("COIN FLIP",net,"🪙");cfFlipping=false;syncBetLockUI();
+      },2650);
+    }catch(e){cfFlipping=false;syncBetLockUI();toast("❌ "+(e.message||"Ошибка COIN FLIP"));}
   }
   document.getElementById("cfFlipBtn").addEventListener("click", flipCoin);
 
@@ -3462,25 +3374,61 @@ if(restoreBtn){
   document.getElementById("promoCodeInput")?.addEventListener("keydown",e=>{ if(e.key==="Enter") activatePromo(); });
   document.getElementById("profileRestoreStreakBtn").addEventListener("click",()=>{clickSound();restoreStreak();});
   ["bj","tower","cf","roulette"].forEach(game=>{const input=document.getElementById(game+"BetInput"),max=document.getElementById(game+"BetMax");if(input){input.addEventListener("input",()=>{setBetAmount(game,input.value);});input.addEventListener("blur",()=>{setBetAmount(game,input.value);if(!validateBet(input.value))toast("BET должен быть больше 0");});}if(max)max.addEventListener("click",()=>{clickSound();setBetAmount(game,balance);});});
+  function roundBetHint(value, balanceValue){
+    const b=Math.max(0,Math.floor(Number(balanceValue)||0));
+    if(!b) return 0;
+    let v=Math.min(b, Math.max(1, Math.round(Number(value)||0)));
+    const pow=Math.pow(10, Math.max(0, Math.floor(Math.log10(v))-1));
+    const scaled=v/pow;
+    let nice;
+    if(scaled < 1.5) nice=1;
+    else if(scaled < 2.5) nice=2;
+    else if(scaled < 3.75) nice=2.5;
+    else if(scaled < 7.5) nice=5;
+    else nice=10;
+    return Math.min(b, Math.max(1, Math.round(nice*pow)));
+  }
   function proportionalBetValues(){
     const b=Math.max(0,Math.floor(balance||0));
-    const raw=[b*0.01,b*0.025,b*0.05,b*0.10,b*0.25];
-    const step=b>=1000000?1000:b>=100000?100:b>=10000?10:1;
-    return raw.map(v=>Math.min(b,Math.max(1,Math.round(v/step)*step)));
+    if(!b) return [0,0,0];
+    const ratios = b < 2000000 ? [0.10,0.50,1] : [0.20,0.50,1];
+    const vals=ratios.map(r=>roundBetHint(b*r,b));
+    vals[2]=b;
+    return [...new Set(vals)].slice(0,3).concat([b]).slice(0,3);
   }
   function refreshQuickBets(){
     const vals=proportionalBetValues();
-    document.querySelectorAll(".bet-quick[data-bet-target]").forEach((b,i)=>{
-      const v=vals[i%vals.length]; b.dataset.betValue=String(v); b.textContent=fmt(v);
+    document.querySelectorAll('.bet-hints').forEach(row=>{
+      const buttons=[...row.querySelectorAll('.bet-hint')];
+      buttons.forEach((b,i)=>{
+        const v=vals[i]||0;
+        b.dataset.betValue=String(v);
+        b.textContent=v?fmt(v):'—';
+      });
     });
-    document.querySelectorAll(".bet-quick[data-chip]").forEach((b,i)=>{
-      const v=vals[i%vals.length]; b.dataset.chip=String(v); b.textContent=fmt(v);
+    document.querySelectorAll('.bet-quick[data-chip]').forEach((b,i)=>{
+      const v=vals[i]||0;
+      b.dataset.chip=String(v); b.textContent=v?fmt(v):'—';
     });
   }
-  document.querySelectorAll(".bet-quick").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll('[data-bet-op]').forEach(btn=>btn.addEventListener('click',()=>{
+    clickSound();
+    const g=btn.dataset.betGame;
+    if(!g || isBetLocked(g)) return;
+    const input=document.getElementById(g+'BetInput');
+    const current=validateBet(input?.value||0);
+    let next=current;
+    if(btn.dataset.betOp==='double') next=Math.min(balance,current*2);
+    if(btn.dataset.betOp==='half') next=Math.max(1,Math.floor(current/2));
+    if(btn.dataset.betOp==='plus') next=Math.min(balance,current+1);
+    if(btn.dataset.betOp==='minus') next=Math.max(1,current-1);
+    setBetAmount(g,next);
+  }));
+  document.querySelectorAll('.bet-quick').forEach(b=>b.addEventListener('click',()=>{
     clickSound();
     const g=b.dataset.betTarget;
-    if(g)setBetAmount(g,b.dataset.betValue);else setBetAmount("roulette",b.dataset.chip);
+    if(g) setBetAmount(g,b.dataset.betValue);
+    else setBetAmount('roulette',b.dataset.chip);
   }));
   const originalRenderBalance=renderBalance; renderBalance=function(){originalRenderBalance();refreshQuickBets();syncAllBetInputs();syncBetLockUI();};
   refreshQuickBets();
