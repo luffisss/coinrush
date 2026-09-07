@@ -911,6 +911,14 @@
     <div class="no-results" id="noResults" style="display:none;">Ничего не найдено</div>
   </div>
 
+  <!-- CoinRush Ads Banner: content loaded dynamically from Supabase table "ads" -->
+  <div id="coinrushAdBanner" style="display:none;margin:14px auto;max-width:480px;border-radius:16px;overflow:hidden;box-shadow:0 4px 18px rgba(139,92,246,0.35);">
+    <a id="coinrushAdLink" href="#" target="_blank" rel="noopener" style="display:block;text-decoration:none;">
+      <img id="coinrushAdImg" src="" alt="ad" style="display:none;width:100%;height:auto;">
+      <video id="coinrushAdVideo" style="display:none;width:100%;height:auto;" autoplay muted loop playsinline></video>
+    </a>
+  </div>
+
   <!-- BLACKJACK -->
   <div class="screen" id="screen-blackjack">
     <div class="back-btn" data-back="home">← Назад</div>
@@ -1345,6 +1353,8 @@
     </div>
   </div>
 
+</div>
+
 <script>
 (function(){
   "use strict";
@@ -1576,6 +1586,39 @@ function saveBalance(v){
     });
 
     return backendSavePromise;
+  }
+
+  /* ===== CoinRush Ads Banner (Supabase-driven) ===== */
+  async function loadCoinrushAdBanner(){
+    if(!supabaseClient) return;
+    try{
+      const {data, error} = await supabaseClient
+        .from("ads")
+        .select("media_url,media_type,link_url")
+        .eq("is_active", true)
+        .order("sort_order", {ascending:true})
+        .limit(1);
+      if(error || !data || !data.length) return;
+      const ad = data[0];
+      const banner = document.getElementById("coinrushAdBanner");
+      const link = document.getElementById("coinrushAdLink");
+      const img = document.getElementById("coinrushAdImg");
+      const vid = document.getElementById("coinrushAdVideo");
+      if(!banner || !link) return;
+      link.href = ad.link_url || "#";
+      if(ad.media_type === "video"){
+        vid.src = ad.media_url;
+        vid.style.display = "block";
+        img.style.display = "none";
+      } else {
+        img.src = ad.media_url;
+        img.style.display = "block";
+        vid.style.display = "none";
+      }
+      banner.style.display = "block";
+    }catch(e){
+      console.warn("CoinRush ad banner load failed:", e);
+    }
   }
 
   async function initSupabase(){
@@ -3808,6 +3851,7 @@ if(restoreBtn){
   minesReset();
 
   setTimeout(initSupabase, 0);
+  setTimeout(loadCoinrushAdBanner, 0);
   setInterval(()=>{ if(supabaseReady) loadGlobalLeaderboard(); }, 30000);
 
 })();
