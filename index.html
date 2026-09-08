@@ -874,6 +874,14 @@
 
   <!-- HOME -->
   <div class="screen active" id="screen-home">
+    <!-- Новый рекламный баннер: только на главном экране, в самом верху. -->
+    <!-- CoinRush Ads Banner: content loaded dynamically from Supabase table "ads" -->
+    <div id="coinrushAdBanner" style="display:none;margin:22px auto 8px;max-width:100%;border-radius:16px;overflow:hidden;box-shadow:0 4px 18px rgba(139,92,246,0.35);">
+      <a id="coinrushAdLink" href="#" target="_blank" rel="noopener" style="display:block;text-decoration:none;">
+        <img id="coinrushAdImg" src="" alt="Реклама" style="display:none;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;">
+        <video id="coinrushAdVideo" style="display:none;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;" autoplay muted loop playsinline></video>
+      </a>
+    </div>
     <!-- Старый домашний баннер убран. Рекламный баннер теперь показывается только внизу главного экрана. -->
     <div class="streak-card" id="streakCard">
       <div class="streak-top">
@@ -906,13 +914,7 @@
     <div class="games-grid" id="gamesGrid"></div>
     <div class="no-results" id="noResults" style="display:none;">Ничего не найдено</div>
 
-    <!-- CoinRush Ads Banner: content loaded dynamically from Supabase table "ads" -->
-    <div id="coinrushAdBanner" style="display:none;margin:22px auto 8px;max-width:100%;border-radius:16px;overflow:hidden;box-shadow:0 4px 18px rgba(139,92,246,0.35);">
-      <a id="coinrushAdLink" href="#" target="_blank" rel="noopener" style="display:block;text-decoration:none;">
-        <img id="coinrushAdImg" src="" alt="Реклама" style="display:none;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;">
-        <video id="coinrushAdVideo" style="display:none;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;" autoplay muted loop playsinline></video>
-      </a>
-    </div>
+
   </div>
 
   <!-- BLACKJACK -->
@@ -1221,7 +1223,16 @@
       <div id="profileStreakPanel"><div class="streak-link" id="streakDetailsLinkProfile">Подробнее и календарь →</div></div>
       <div id="profileAchPanel" style="display:none;"><div class="ach-grid" id="profileAchGrid"></div></div>
     </div>
-    <div class="ad-card"><div class="ad-info"><b>Релкама +20 000 CR</b>Смотреть можно 1 Раз в 10 Минут</div><button class="btn-ad" id="watchAdProfileBtn">СМОТРЕТЬ</button></div>
+    <div class="ad-card" style="display:block;overflow:hidden;">
+      <div class="ad-info" style="margin-bottom:10px;"><b>Реклама +20 000 CR</b>Смотреть можно 1 раз в 10 минут</div>
+      <div id="coinrushProfileAdBanner" style="display:none;margin:0 0 12px;border-radius:14px;overflow:hidden;border:1px solid rgba(139,92,246,.45);box-shadow:0 4px 18px rgba(139,92,246,.22);">
+        <a id="coinrushProfileAdLink" href="#" target="_blank" rel="noopener noreferrer" style="display:block;line-height:0;">
+          <img id="coinrushProfileAdImg" src="" alt="Реклама CoinRush" style="display:none;width:100%;height:auto;object-fit:cover;">
+          <video id="coinrushProfileAdVideo" muted playsinline loop style="display:none;width:100%;height:auto;object-fit:cover;"></video>
+        </a>
+      </div>
+      <button class="btn-ad" id="watchAdProfileBtn" style="width:100%;">СМОТРЕТЬ</button>
+    </div>
     <div class="title-badge" id="titleBadge">🎮 ИГРОК</div>
     <div class="stats-grid">
       <div class="stat-box"><div class="val" id="statPlayed">0</div><div class="lbl">Игр сыграно</div></div>
@@ -1596,22 +1607,32 @@ function saveBalance(v){
         .limit(1);
       if(error || !data || !data.length) return;
       const ad = data[0];
-      const banner = document.getElementById("coinrushAdBanner");
-      const link = document.getElementById("coinrushAdLink");
-      const img = document.getElementById("coinrushAdImg");
-      const vid = document.getElementById("coinrushAdVideo");
-      if(!banner || !link) return;
-      link.href = ad.link_url || "#";
-      if(ad.media_type === "video"){
-        vid.src = ad.media_url;
-        vid.style.display = "block";
-        img.style.display = "none";
-      } else {
-        img.src = ad.media_url;
-        img.style.display = "block";
-        vid.style.display = "none";
-      }
-      banner.style.display = "block";
+      const targets = [
+        {
+          banner: document.getElementById("coinrushAdBanner"),
+          link: document.getElementById("coinrushAdLink"),
+          img: document.getElementById("coinrushAdImg"),
+          vid: document.getElementById("coinrushAdVideo")
+        },
+        {
+          banner: document.getElementById("coinrushProfileAdBanner"),
+          link: document.getElementById("coinrushProfileAdLink"),
+          img: document.getElementById("coinrushProfileAdImg"),
+          vid: document.getElementById("coinrushProfileAdVideo")
+        }
+      ];
+      targets.forEach(t=>{
+        if(!t.banner || !t.link) return;
+        t.link.href = ad.link_url || "#";
+        if(ad.media_type === "video"){
+          if(t.vid){ t.vid.src = ad.media_url || ""; t.vid.style.display = "block"; }
+          if(t.img) t.img.style.display = "none";
+        } else {
+          if(t.img){ t.img.src = ad.media_url || ""; t.img.style.display = "block"; }
+          if(t.vid) t.vid.style.display = "none";
+        }
+        t.banner.style.display = "block";
+      });
     }catch(e){
       console.warn("CoinRush ad banner load failed:", e);
     }
