@@ -1225,12 +1225,6 @@
     </div>
     <div class="ad-card" style="display:block;overflow:hidden;">
       <div class="ad-info" style="margin-bottom:10px;"><b>Реклама +20 000 CR</b>Смотреть можно 1 раз в 10 минут</div>
-      <div id="coinrushProfileAdBanner" style="display:none;margin:0 0 12px;border-radius:14px;overflow:hidden;border:1px solid rgba(139,92,246,.45);box-shadow:0 4px 18px rgba(139,92,246,.22);">
-        <a id="coinrushProfileAdLink" href="#" target="_blank" rel="noopener noreferrer" style="display:block;line-height:0;">
-          <img id="coinrushProfileAdImg" src="" alt="Реклама CoinRush" style="display:none;width:100%;height:auto;object-fit:cover;">
-          <video id="coinrushProfileAdVideo" muted playsinline loop style="display:none;width:100%;height:auto;object-fit:cover;"></video>
-        </a>
-      </div>
       <button class="btn-ad" id="watchAdProfileBtn" style="width:100%;">СМОТРЕТЬ</button>
     </div>
     <div class="title-badge" id="titleBadge">🎮 ИГРОК</div>
@@ -1266,13 +1260,20 @@
     </div>
   </div>
 
-  <!-- AD MODAL -->
+  <!-- REWARD AD MODAL -->
   <div class="modal-bg" id="adModal">
-    <div class="modal-box">
-      <h3>📺 Реклама</h3>
-      <p>Здесь может быть ваша реклама, награда придёт после полного просмотра.</p>
+    <div class="modal-box" style="padding:14px;max-width:430px;overflow:hidden;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <h3 style="margin:0;">📺 Реклама</h3>
+        <span style="font-size:11px;color:var(--text2);">12 сек.</span>
+      </div>
+      <a id="rewardAdLink" href="#" target="_blank" rel="noopener noreferrer" style="display:block;text-decoration:none;line-height:0;border-radius:14px;overflow:hidden;border:1px solid rgba(139,92,246,.5);background:#080611;">
+        <img id="rewardAdImg" src="" alt="Реклама" style="display:none;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;">
+        <video id="rewardAdVideo" muted playsinline style="display:none;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;"></video>
+      </a>
+      <div style="font-size:11px;color:var(--text2);text-align:center;margin:9px 0 7px;">Досмотри рекламу полностью, чтобы получить награду</div>
       <div class="ad-progress-bg"><div class="ad-progress-fill" id="adProgressFill"></div></div>
-      <div class="ad-countdown" id="adCountdownText">5</div>
+      <div class="ad-countdown" id="adCountdownText">12</div>
     </div>
   </div>
 
@@ -1614,12 +1615,6 @@ function saveBalance(v){
           img: document.getElementById("coinrushAdImg"),
           vid: document.getElementById("coinrushAdVideo")
         },
-        {
-          banner: document.getElementById("coinrushProfileAdBanner"),
-          link: document.getElementById("coinrushProfileAdLink"),
-          img: document.getElementById("coinrushProfileAdImg"),
-          vid: document.getElementById("coinrushProfileAdVideo")
-        }
       ];
       targets.forEach(t=>{
         if(!t.banner || !t.link) return;
@@ -2693,25 +2688,62 @@ if(restoreBtn){
       }
     });
   }
-  function startFakeAd(){
+  async function startRewardAd(){
     const modal = document.getElementById("adModal");
-    modal.classList.add("show");
+    const link = document.getElementById("rewardAdLink");
+    const img = document.getElementById("rewardAdImg");
+    const vid = document.getElementById("rewardAdVideo");
     const bar = document.getElementById("adProgressFill");
     const countEl = document.getElementById("adCountdownText");
-    bar.style.width = "0%";
-    let progress = 0;
-    const totalMs = 4000, stepMs = 100;
-    const timer = setInterval(()=>{
+    if(!modal || !link || !img || !vid) return;
+
+    let ad = null;
+    if(supabaseClient){
+      try{
+        const {data,error}=await supabaseClient
+          .from("ads")
+          .select("media_url,media_type,link_url")
+          .eq("is_active",true)
+          .order("sort_order",{ascending:true})
+          .limit(1);
+        if(!error && data && data.length) ad=data[0];
+      }catch(e){ console.warn("Reward ad load failed:",e); }
+    }
+    if(!ad || !ad.media_url){
+      toast("Реклама сейчас недоступна");
+      return;
+    }
+
+    link.href=ad.link_url || "#";
+    img.style.display="none";
+    vid.style.display="none";
+    vid.pause();
+    if(ad.media_type === "video"){
+      vid.src=ad.media_url;
+      vid.style.display="block";
+      try{ await vid.play(); }catch(e){}
+    }else{
+      img.src=ad.media_url;
+      img.style.display="block";
+    }
+
+    modal.classList.add("show");
+    bar.style.width="0%";
+    const totalMs=12000, stepMs=100;
+    let progress=0;
+    countEl.textContent="12";
+    const timer=setInterval(()=>{
       progress += stepMs;
-      bar.style.width = Math.min(100, progress/totalMs*100) + "%";
-      countEl.textContent = Math.max(0, Math.ceil((totalMs-progress)/1000));
-      if(progress >= totalMs){
+      bar.style.width=Math.min(100,progress/totalMs*100)+"%";
+      countEl.textContent=Math.max(0,Math.ceil((totalMs-progress)/1000));
+      if(progress>=totalMs){
         clearInterval(timer);
+        if(vid) vid.pause();
         completeRewardAd();
       }
-    }, stepMs);
+    },stepMs);
   }
-  function openRewardAd(){ clickSound(); if(adCooldownRemaining()>0)return; startFakeAd(); }
+  function openRewardAd(){ clickSound(); if(adCooldownRemaining()>0)return; startRewardAd(); }
   const watchAdBtnEl = document.getElementById("watchAdBtn");
   if(watchAdBtnEl) watchAdBtnEl.addEventListener("click", openRewardAd);
   const watchAdProfileBtnEl = document.getElementById("watchAdProfileBtn");
