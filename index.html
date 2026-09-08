@@ -882,7 +882,7 @@
         <video id="coinrushAdVideo" style="display:none;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;" autoplay muted loop playsinline></video>
       </a>
     </div>
-    <!-- Старый домашний баннер убран. Рекламный баннер теперь показывается только внизу главного экрана. -->
+    <!-- Старый домашний баннер убран. Актуальная реклама показывается здесь, сверху главного экрана. -->
     <div class="streak-card" id="streakCard">
       <div class="streak-top">
         <div class="streak-title">🔥 DAILY STREAK</div>
@@ -1262,18 +1262,22 @@
 
   <!-- REWARD AD MODAL -->
   <div class="modal-bg" id="adModal">
-    <div class="modal-box" style="padding:14px;max-width:430px;overflow:hidden;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+    <div class="modal-box" style="padding:14px;max-width:430px;overflow:hidden;position:relative;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:10px;">
         <h3 style="margin:0;">📺 Реклама</h3>
-        <span style="font-size:11px;color:var(--text2);">12 сек.</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span id="rewardAdDurationLabel" style="font-size:11px;color:var(--text2);">12 сек.</span>
+          <button type="button" id="rewardAdCloseBtn" class="icon-btn" aria-label="Закрыть рекламу" style="width:30px;height:30px;min-width:30px;padding:0;">✕</button>
+        </div>
       </div>
+      <div id="rewardAdWarning" style="display:none;margin:0 0 10px;padding:9px 11px;border-radius:10px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.28);color:#ffb4b4;font-size:11px;text-align:center;line-height:1.35;">⚠️ Если закрыть рекламу до конца, награда <b>не будет получена</b>.</div>
       <a id="rewardAdLink" href="#" target="_blank" rel="noopener noreferrer" style="display:block;text-decoration:none;line-height:0;border-radius:14px;overflow:hidden;border:1px solid rgba(139,92,246,.5);background:#080611;">
         <img id="rewardAdImg" src="" alt="Реклама" style="display:none;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;">
         <video id="rewardAdVideo" muted playsinline style="display:none;width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;"></video>
       </a>
       <div style="font-size:11px;color:var(--text2);text-align:center;margin:9px 0 7px;">Досмотри рекламу полностью, чтобы получить награду</div>
       <div class="ad-progress-bg"><div class="ad-progress-fill" id="adProgressFill"></div></div>
-      <div class="ad-countdown" id="adCountdownText">12</div>
+      <div class="ad-countdown" id="adCountdownText">—</div>
     </div>
   </div>
 
@@ -1596,41 +1600,57 @@ function saveBalance(v){
     return backendSavePromise;
   }
 
-  /* ===== CoinRush Ads Banner (Supabase-driven) ===== */
-  async function loadCoinrushAdBanner(){
-    if(!supabaseClient) return;
+  /* ===== CoinRush Ads Banner (single Supabase source) ===== */
+  async function getActiveCoinrushAd(){
+    if(!supabaseClient) return null;
     try{
-      const {data, error} = await supabaseClient
+      const {data,error}=await supabaseClient.rpc("get_active_ad");
+      if(!error && data && Object.keys(data).length) return data;
+    }catch(e){ console.warn("CoinRush get_active_ad RPC failed:", e); }
+    try{
+      const {data,error}=await supabaseClient
         .from("ads")
-        .select("media_url,media_type,link_url")
+        .select("id,title,media_url,media_type,link_url,duration_seconds,ends_at")
         .eq("is_active", true)
+        .lte("starts_at", new Date().toISOString())
+        .or("ends_at.is.null,ends_at.gt."+new Date().toISOString())
         .order("sort_order", {ascending:true})
+        .order("id", {ascending:false})
         .limit(1);
-      if(error || !data || !data.length) return;
-      const ad = data[0];
-      const targets = [
-        {
-          banner: document.getElementById("coinrushAdBanner"),
-          link: document.getElementById("coinrushAdLink"),
-          img: document.getElementById("coinrushAdImg"),
-          vid: document.getElementById("coinrushAdVideo")
-        },
-      ];
-      targets.forEach(t=>{
-        if(!t.banner || !t.link) return;
-        t.link.href = ad.link_url || "#";
-        if(ad.media_type === "video"){
-          if(t.vid){ t.vid.src = ad.media_url || ""; t.vid.style.display = "block"; }
-          if(t.img) t.img.style.display = "none";
-        } else {
-          if(t.img){ t.img.src = ad.media_url || ""; t.img.style.display = "block"; }
-          if(t.vid) t.vid.style.display = "none";
-        }
-        t.banner.style.display = "block";
-      });
-    }catch(e){
-      console.warn("CoinRush ad banner load failed:", e);
+      if(!error && data && data.length) return data[0];
+    }catch(e){ console.warn("CoinRush ad fallback failed:", e); }
+    return null;
+  }
+
+  async function loadCoinrushAdBanner(){
+    const banner = document.getElementById("coinrushAdBanner");
+    if(!banner) return;
+    const ad = await getActiveCoinrushAd();
+    if(!ad || !ad.media_url){ banner.style.display="none"; return; }
+
+    const link = document.getElementById("coinrushAdLink");
+    const img = document.getElementById("coinrushAdImg");
+    const vid = document.getElementById("coinrushAdVideo");
+    if(!link) return;
+
+    link.href = ad.link_url || "#";
+    if(ad.media_type === "video"){
+      if(img) img.style.display="none";
+      if(vid){
+        vid.src = ad.media_url;
+        vid.style.display="block";
+        vid.autoplay=true;
+        vid.muted=true;
+        vid.loop=true;
+      }
+    }else{
+      if(vid){ vid.pause(); vid.style.display="none"; }
+      if(img){
+        img.src = ad.media_url;
+        img.style.display="block";
+      }
     }
+    banner.style.display="block";
   }
 
   async function initSupabase(){
@@ -2372,7 +2392,11 @@ await saveUser();
     });
   });
   document.querySelectorAll(".modal-bg").forEach(m=>{
-    m.addEventListener("click", (e)=>{ if(e.target === m) m.classList.remove("show"); });
+    m.addEventListener("click", (e)=>{
+      if(e.target !== m) return;
+      if(m.id === "adModal") { closeRewardAdWithoutReward(); return; }
+      m.classList.remove("show");
+    });
   });
   const soundSwitch = document.getElementById("soundSwitch");
   soundSwitch.classList.toggle("on", soundOn);
@@ -2659,11 +2683,32 @@ if(restoreBtn){
   }
   // completeRewardAd(): called once the (demo) ad finishes playing. In production this
   // is the callback a real ad SDK would invoke on a verified full-watch event.
+  let rewardAdTimer = null;
+  let rewardAdCompleted = false;
+  function closeRewardAdWithoutReward(){
+    if(rewardAdTimer){ clearInterval(rewardAdTimer); rewardAdTimer=null; }
+    rewardAdCompleted = false;
+    try{ const vid=document.getElementById("rewardAdVideo"); if(vid) vid.pause(); }catch(e){}
+    const modal=document.getElementById("adModal");
+    if(modal) modal.classList.remove("show");
+    const warning=document.getElementById("rewardAdWarning");
+    if(warning) warning.style.display="none";
+    const bar=document.getElementById("adProgressFill");
+    if(bar) bar.style.width="0%";
+    const count=document.getElementById("adCountdownText");
+    if(count) count.textContent="—";
+    toast("Реклама закрыта — награда не получена");
+  }
   function completeRewardAd(){
+    if(rewardAdCompleted) return;
+    rewardAdCompleted = true;
+    if(rewardAdTimer){ clearInterval(rewardAdTimer); rewardAdTimer=null; }
     changeBalance(AD_REWARD);
     startAdCooldown();
     addHistory("📺 REWARD AD", AD_REWARD, "📺", {stats:false});
     document.getElementById("adModal").classList.remove("show");
+    const warning=document.getElementById("rewardAdWarning");
+    if(warning) warning.style.display="none";
     confetti(); winSound();
     toast("🎉 +" + fmt(AD_REWARD) + " CR за просмотр рекламы!");
     refreshAdButton();
@@ -2695,55 +2740,64 @@ if(restoreBtn){
     const vid = document.getElementById("rewardAdVideo");
     const bar = document.getElementById("adProgressFill");
     const countEl = document.getElementById("adCountdownText");
+    const durationLabel = modal?.querySelector("h3 + span");
     if(!modal || !link || !img || !vid) return;
 
-    let ad = null;
-    if(supabaseClient){
-      try{
-        const {data,error}=await supabaseClient
-          .from("ads")
-          .select("media_url,media_type,link_url")
-          .eq("is_active",true)
-          .order("sort_order",{ascending:true})
-          .limit(1);
-        if(!error && data && data.length) ad=data[0];
-      }catch(e){ console.warn("Reward ad load failed:",e); }
-    }
+    const ad = await getActiveCoinrushAd();
     if(!ad || !ad.media_url){
       toast("Реклама сейчас недоступна");
       return;
     }
 
-    link.href=ad.link_url || "#";
+    link.href = ad.link_url || "#";
     img.style.display="none";
     vid.style.display="none";
-    vid.pause();
+    try{ vid.pause(); }catch(e){}
+
     if(ad.media_type === "video"){
-      vid.src=ad.media_url;
+      vid.src = ad.media_url;
       vid.style.display="block";
       try{ await vid.play(); }catch(e){}
     }else{
-      img.src=ad.media_url;
+      img.src = ad.media_url;
       img.style.display="block";
     }
 
+    const totalMs = Math.max(1, Math.min(300, Number(ad.duration_seconds) || 12)) * 1000;
+    rewardAdCompleted = false;
+    if(durationLabel) durationLabel.textContent = Math.ceil(totalMs/1000) + " сек.";
     modal.classList.add("show");
-    bar.style.width="0%";
-    const totalMs=12000, stepMs=100;
+    const warning=document.getElementById("rewardAdWarning");
+    if(warning) warning.style.display="block";
+    if(bar) bar.style.width="0%";
+    if(countEl) countEl.textContent=String(Math.ceil(totalMs/1000));
+
     let progress=0;
-    countEl.textContent="12";
-    const timer=setInterval(()=>{
+    const stepMs=100;
+    if(rewardAdTimer) clearInterval(rewardAdTimer);
+    rewardAdTimer=setInterval(()=>{
       progress += stepMs;
-      bar.style.width=Math.min(100,progress/totalMs*100)+"%";
-      countEl.textContent=Math.max(0,Math.ceil((totalMs-progress)/1000));
+      if(bar) bar.style.width=Math.min(100,progress/totalMs*100)+"%";
+      if(countEl) countEl.textContent=Math.max(0,Math.ceil((totalMs-progress)/1000));
       if(progress>=totalMs){
-        clearInterval(timer);
-        if(vid) vid.pause();
+        clearInterval(rewardAdTimer);
+        rewardAdTimer=null;
+        try{ vid.pause(); }catch(e){}
         completeRewardAd();
       }
     },stepMs);
   }
+
   function openRewardAd(){ clickSound(); if(adCooldownRemaining()>0)return; startRewardAd(); }
+  const rewardAdCloseBtn = document.getElementById("rewardAdCloseBtn");
+  if(rewardAdCloseBtn) rewardAdCloseBtn.addEventListener("click", closeRewardAdWithoutReward);
+  const rewardAdModal = document.getElementById("adModal");
+  if(rewardAdModal) rewardAdModal.addEventListener("click", (e)=>{
+    if(e.target === rewardAdModal){
+      closeRewardAdWithoutReward();
+    }
+  });
+
   const watchAdBtnEl = document.getElementById("watchAdBtn");
   if(watchAdBtnEl) watchAdBtnEl.addEventListener("click", openRewardAd);
   const watchAdProfileBtnEl = document.getElementById("watchAdProfileBtn");
